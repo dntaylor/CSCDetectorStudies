@@ -1,24 +1,33 @@
 import FWCore.ParameterSet.Config as cms
 
-MCFLAG = False
+process = cms.Process("TagProbe")
 
-GLOBALTAG = "FT_R_53_V6::All" # 2012AB re-reco + prompt tag
+###
+# User configurable parameters
+###
+MCFLAG = False 				# MC not yet implemented
 
-MUONCOLLECTION = "muons"
-MUONCUT = ""
+GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
-TAGMUONCUT = ""
-PROBEMUONCUT = ""
+MUONCOLLECTION = "muons"		# could be patMuons 
+MUONCUT = "pt>20 && 1.2<eta<1.8" 	# ME42 current eta position
+
+TAGMUONCUT = "isGlobalMuon"
+PROBEMUONCUT = "isTrackerMuon"
 PASSPROBEMUONCUT = ""
 
 PASSPROBEPSET = cms.PSet(
 	isGlobalMuon = cms.string("isGlobalMuon"),
 )
 
-ZMASSCUT = "60.0 < mass < 120.0"
+ZMASSCUT = "60.0 < mass < 120.0"	# currently only Z T&P
 JPSIMASSCUT = "2.5 < mass < 3.8"
 
+OUTPUTFILENAME = "ME42TagAndProbeTree.root"
+
+###
 # includes
+###
 process = cms.Process("TagProbe")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load("Configuration.Geometry.GeometryIdeal_cff")
@@ -28,17 +37,21 @@ process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
+###
 # datasets
+###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-		'/store/data/Run2012A/DoubleMu/AOD/08Jun2012-v2/0000/005C23C4-11B3-E111-AF38-003048678A78.root',
+		'file:Run2012A-DoubleMuon.root',
 	)
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source.inputCommands = cms.untracked.vstring("keep *")
 
+###
 # tag and probe selections
+###
 process.goodMuons = cms.EDFilter("MuonRefSelector",
 	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(MUONCUT),
@@ -49,44 +62,54 @@ process.tagMuons = cms.EDFilter("MuonRefSelector",
 	cut = cms.string(TAGMUONCUT),
 )
 
-from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
-process.goodCaloMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("calomuons"),
-	cut = cms.string(MUONCUT),
-)
-
-process.mergedMuons = cms.EDProducer("CaloMuonMerger",
-	muons     = cms.InputTag("goodMuons"), 
-	caloMuons = cms.InputTag("goodCaloMuons"),
-	minCaloCompatibility = calomuons.minCaloCompatibility
-)
-
 process.probeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("mergedMuons"),
+	src = cms.InputTag("goodMuons"),
 	cut = cms.string(PROBEMUONCUT),
 )
 
 process.passProbeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("mergedMuons"),
+	src = cms.InputTag("goodMuons"),
 	cut = cms.string(PASSPROBEMUONCUT),
 )
 
-process.ZTagProbe = cms.EDProducer("CandViewShallowCombiner",
+process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 	decay = cms.string("tagMuons@+ probeMuons@-"),
 	cut = cms.string(ZMASSCUT),
 )
 
+###
 # produce tag and probe trees
+###
 process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 	tagProbePairs = cms.InputTag("ZTagProbe"),
 	arbitration = cms.string("OneProbe"),
 	variables = cms.PSet(
 		pt = cms.string("pt"),
-		abseta = cms.string("abs(eta)"),
+		eta = cms.string("eta"),
+		phi = cms.string("phi"),
 	),
 	flags = PASSPROBEPSET,
 	addRunLumiInfo = cms.bool(True),
 	isMC = cms.bool(MCFLAG),
 )
 
+###
+# path
+###
+process.TagAndProbe = cms.Path(
+	process.goodMuons *
+	(process.tagMuons + process.probeMuons) *
+	process.passProbeMuons *
+	process.ZTagProbe *
+	process.tagAndProbeTree
+	)
 
+###
+# output
+###
+process.TFileService = cms.Service(
+    "TFileService",
+    fileName = cms.string(OUTPUTFILENAME)
+)
+
+process.options.SkipEvent = cms.untracked.vstring('ProductNotFound')
