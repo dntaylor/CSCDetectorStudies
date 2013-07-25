@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
 process = cms.Process("TagProbe")
 
@@ -9,11 +10,11 @@ MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
-MUONCOLLECTION = "muons"		# could be patMuons 
+MUONCOLLECTION = "muons"		# could be cleanPatMuons 
 MUONCUT = "pt>20 && 1.2<eta<1.8" 	# ME42 current eta position
 
-TAGMUONCUT = "isGlobalMuon"
-PROBEMUONCUT = "isTrackerMuon"
+TAGMUONCUT = MUONCUT + " && isGlobalMuon"
+PROBEMUONCUT = MUONCUT + " && isTrackerMuon"
 PASSPROBEMUONCUT = ""
 
 PASSPROBEPSET = cms.PSet(
@@ -52,23 +53,18 @@ process.source.inputCommands = cms.untracked.vstring("keep *")
 ###
 # tag and probe selections
 ###
-process.goodMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(MUONCOLLECTION),
-	cut = cms.string(MUONCUT),
-)
-
 process.tagMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("goodMuons"),
+	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(TAGMUONCUT),
 )
 
 process.probeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("goodMuons"),
+	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )
 
 process.passProbeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag("goodMuons"),
+	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(PASSPROBEMUONCUT),
 )
 
@@ -97,6 +93,7 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 # path
 ###
 process.TagAndProbe = cms.Path(
+	process.patDefaultSequence *
 	process.goodMuons *
 	(process.tagMuons + process.probeMuons) *
 	process.passProbeMuons *
