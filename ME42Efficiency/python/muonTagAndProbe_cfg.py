@@ -1,8 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 #from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
-process = cms.Process("TagProbe")
-
 ###
 # User configurable parameters
 ###
@@ -18,7 +16,9 @@ PROBEMUONCUT = MUONCUT + " && isTrackerMuon"
 PASSPROBEMUONCUT = ""
 
 PASSPROBEPSET = cms.PSet(
-	isGlobalMuon = cms.string("isGlobalMuon"),
+	passingPFMuon = cms.string("isPFMuon"),
+	passingGlobalMuonOrTrackerMuon = cms.string("isGlobalMuon || isTrackerMuon"),
+	passingProbeMuonCut = cms.InputTag("passProbeMuons"),
 )
 
 ZMASSCUT = "60.0 < mass < 120.0"
@@ -35,7 +35,7 @@ process.GlobalTag.globaltag = GLOBALTAG
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 1-0
 
 ###
 # datasets
@@ -46,8 +46,7 @@ process.source = cms.Source("PoolSource",
 	)
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
-process.source.inputCommands = cms.untracked.vstring("keep *")
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ###
 # tag and probe selections
@@ -105,5 +104,3 @@ process.TFileService = cms.Service(
     "TFileService",
     fileName = cms.string(OUTPUTFILENAME)
 )
-
-process.options.SkipEvent = cms.untracked.vstring('ProductNotFound')
