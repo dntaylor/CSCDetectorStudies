@@ -21,8 +21,7 @@ PASSPROBEPSET = cms.PSet(
 	isGlobalMuon = cms.string("isGlobalMuon"),
 )
 
-ZMASSCUT = "60.0 < mass < 120.0"	# currently only Z T&P
-JPSIMASSCUT = "2.5 < mass < 3.8"
+ZMASSCUT = "60.0 < mass < 120.0"
 
 OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 
@@ -53,17 +52,17 @@ process.source.inputCommands = cms.untracked.vstring("keep *")
 ###
 # tag and probe selections
 ###
-process.tagMuons = cms.EDFilter("MuonRefSelector",
+process.tagMuons = cms.EDFilter("PATMuonRefSelector",
 	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(TAGMUONCUT),
 )
 
-process.probeMuons = cms.EDFilter("MuonRefSelector",
+process.probeMuons = cms.EDFilter("PATMuonRefSelector",
 	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )
 
-process.passProbeMuons = cms.EDFilter("MuonRefSelector",
+process.passProbeMuons = cms.EDFilter("PATMuonRefSelector",
 	src = cms.InputTag(MUONCOLLECTION),
 	cut = cms.string(PASSPROBEMUONCUT),
 )
