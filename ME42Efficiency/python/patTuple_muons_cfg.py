@@ -1,6 +1,7 @@
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
-from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+from PhysicsTools.PatAlgos.tools.coreTools import *
 removeMCMatching(process, ['All'])
+#removeAllPATObjectsBut(process, ['Muons'])
 
 process.p = cms.Path(
 	process.patDefaultSequence
@@ -10,14 +11,8 @@ process.maxEvents.input = 100
 
 process.options.wantSummary = True
 
-process.source.fileNames = cms.untracked.vstring('file:Run2012A-DoubleMuon.root')
+process.source.fileNames = cms.untracked.vstring(
+		'/store/data/Run2012A/DoubleMu/RECO/13Jul2012-v1/00001/E0723268-B6D2-E111-A55E-001A92811732.root',
+		)
 
-from PhysicsTools.PatAlgos.patEventContent_cff import patEventContent
-process.out = cms.OutputModule("PoolOutputModule",
-                fileName = cms.untracked.string('patTuple_muon.root'), # save only events passing the full path 
-                SelectEvents = cms.untracked.PSet(
-                        SelectEvents = cms.vstring('p')
-                        ),  
-                outputCommands = cms.untracked.vstring('drop *', *patEventContent )
-                )
-process.outpath = cms.EndPath(process.out)
+process.out.fileName = 'patTuple_muon.root'
