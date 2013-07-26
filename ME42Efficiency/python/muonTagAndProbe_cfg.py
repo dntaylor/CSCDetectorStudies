@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from PhysicsTools.PatAlgos.patTemplate_cfg import *
+#from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
 process = cms.Process("TagProbe")
 
@@ -10,7 +10,7 @@ MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
-MUONCOLLECTION = "muons"		# could be cleanPatMuons 
+MUONCOLLECTION = "cleanPatMuons"
 MUONCUT = "pt>20 && 1.2<eta<1.8" 	# ME42 current eta position
 
 TAGMUONCUT = MUONCUT + " && isGlobalMuon"
@@ -43,7 +43,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-		'file:Run2012A-DoubleMuon.root',
+		'file:patTuple_muon.root',
 	)
 )
 
@@ -93,8 +93,6 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 # path
 ###
 process.TagAndProbe = cms.Path(
-	process.patDefaultSequence *
-	process.goodMuons *
 	(process.tagMuons + process.probeMuons) *
 	process.passProbeMuons *
 	process.ZTagProbe *

@@ -1,4 +1,6 @@
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
+from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+removeMCMatching(process, ['All'])
 
 process.p = cms.Path(
 	process.patDefaultSequence
