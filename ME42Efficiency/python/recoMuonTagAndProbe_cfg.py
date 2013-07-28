@@ -1,5 +1,4 @@
 import FWCore.ParameterSet.Config as cms
-#from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
 ###
 # User configurable parameters
@@ -8,23 +7,34 @@ MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
-MUONCOLLECTION = "allMuons"
 MUONCUT = "pt>20 && abs(eta)<2.4"
+TAGMUONCOLLECTION = "muons"
+PROBEMUONCOLLECTION = "muons"
 
-TAGMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon"
-PROBEMUONCUT = MUONCUT + " && isCaloMuon"
-PASSPROBEMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon && isCaloMuon"
+TAGMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon" #+ \
+#	" && nChi2<10.0 && nValidMuonHits > 0" + \
+#	" && nMatchedStations>1 && nValidPixelHits>0" + \
+#	" && trackerLayersWithMeasurement>5" + \
+#	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
+PROBEMUONCUT = MUONCUT #+ " && trackerLayersWithMeasurements>5" + \
+#	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
+PASSPROBEMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon && isTrackerMuon"
 
-LOOSEMUON = "isPFMuon && (isGlobalMuon || isCaloMuon)"
-TIGHTMUON = "isPFMuon && isGlobalMuon"
+LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
+TIGHTMUON = "isPFMuon && isGlobalMuon" #+ \
+#	" && nChi2<10.0 && nValidMuonHits>0" + \
+#	" && nMatchedStations>1 && nValidPixelHits>0" + \
+#	" && trackerLayersWithMeasurement>5"
 
 PASSPROBEPSET = cms.PSet(
 	passingPFMuon = cms.string("isPFMuon"),
 	passingCaloMuon = cms.string("isCaloMuon"),
+	passingTrackerMuon = cms.string("isTrackerMuon"),
 	passingLooseMuon = cms.string(LOOSEMUON),
 	passingGlobalMuon = cms.string("isGlobalMuon"),
 	passingTightMuon = cms.string(TIGHTMUON),
 	passingProbeMuonCut = cms.InputTag("passProbeMuons"),
+	ME42PhiRegion = cms.string("1.396 < phi < 2.269"),
 )
 
 ZMASSCUT = "60.0 < mass < 120.0"
@@ -79,17 +89,17 @@ process.allMuons = cms.EDProducer("CaloMuonMerger",
 # tag and probe selections
 ###
 process.tagMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(MUONCOLLECTION),
+	src = cms.InputTag(TAGMUONCOLLECTION),
 	cut = cms.string(TAGMUONCUT),
 )
 
 process.probeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(MUONCOLLECTION),
+	src = cms.InputTag(PROBEMUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )
 
 process.passProbeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(MUONCOLLECTION),
+	src = cms.InputTag(PROBEMUONCOLLECTION),
 	cut = cms.string(PASSPROBEMUONCUT),
 )
 
