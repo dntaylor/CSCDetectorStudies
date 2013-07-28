@@ -9,10 +9,12 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )   
 
 process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
-	InputFileNames = cms.vstring("ME42TagAndProbeTree.root"),
+	InputFileNames = cms.vstring("ME42TagAndProbeTreeWithME42.root"),
+#	InputFileNames = cms.vstring("ME42TagAndProbeTreeWithoutME42.root"),
 	InputDirectoryName = cms.string("tagAndProbeTree"),
 	InputTreeName = cms.string("fitter_tree"),
-	OutputFileName = cms.string("ME42TagAndProbeTreeAnalysis.root"),
+	OutputFileName = cms.string("ME42TagAndProbeTreeWithME42Analysis.root"),
+#	OutputFileName = cms.string("ME42TagAndProbeTreeWithoutME42Analysis.root"),
 	NumCPU = cms.uint32(1),
 	SaveWorkspace = cms.bool(True),
 	Variables = cms.PSet(
@@ -27,10 +29,10 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		passingLooseMuon = cms.vstring("isLooseMuon", "dummy[true=1,false=0]"),
 		passingTightMuon = cms.vstring("isTightMuon", "dummy[true=1,false=0]"),
 		passingProbeMuonCut = cms.vstring("passed probe cut", "dummy[true=1,false=0]"),
-		ME42PhiRegion = cms.vstring("ME42 phi ergion", "dummy[true=1,false=0]"),
+		#ME42PhiRegion = cms.vstring("ME42 phi region", "dummy[true=1,false=0]"),
 	),
 	Cuts = cms.PSet(
-		# cant do phi cuts with current syntax, include in categories instead
+		# cant do phi cuts with current syntax, make cut in tree producer instead 
 	),
 	PDFs = cms.PSet(
 		gaussPlusLinear = cms.vstring(
@@ -58,64 +60,32 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 	),
 
         Efficiencies = cms.PSet(
-		tight_pt_withME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true","ME42PhiRegion","true"),
+		tight_pt = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
-		tight_eta_withME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true","ME42PhiRegion","true"),
+		tight_eta = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
-		loose_pt_withME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","ME42PhiRegion","true"),
+		loose_pt = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
-		loose_eta_withME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","ME42PhiRegion","true"),
-		        UnbinnedVariables = cms.vstring("mass"),
-			BinnedVariables = cms.PSet(
-				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
-			),
-			BinToPDFmap = cms.vstring("voigtianPlusExponential")
-		),
-		tight_pt_withoutME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true","ME42PhiRegion","false"),
-		        UnbinnedVariables = cms.vstring("mass"),
-			BinnedVariables = cms.PSet(
-				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
-			),
-			BinToPDFmap = cms.vstring("voigtianPlusExponential")
-		),
-		tight_eta_withoutME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true","ME42PhiRegion","false"),
-		        UnbinnedVariables = cms.vstring("mass"),
-			BinnedVariables = cms.PSet(
-				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
-			),
-			BinToPDFmap = cms.vstring("voigtianPlusExponential")
-		),
-		loose_pt_withoutME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","ME42PhiRegion","false"),
-		        UnbinnedVariables = cms.vstring("mass"),
-			BinnedVariables = cms.PSet(
-				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
-			),
-			BinToPDFmap = cms.vstring("voigtianPlusExponential")
-		),
-		loose_eta_withoutME42 = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","ME42PhiRegion","false"),
+		loose_eta = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
