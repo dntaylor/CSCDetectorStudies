@@ -12,12 +12,18 @@ MUONCOLLECTION = "allMuons"
 MUONCUT = "pt>20 && abs(eta)<2.4"
 
 TAGMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon"
-PROBEMUONCUT = MUONCUT + "&& isTrackerMuon"
-PASSPROBEMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon && isTrackerMuon"
+PROBEMUONCUT = MUONCUT + " && isCaloMuon"
+PASSPROBEMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon && isCaloMuon"
+
+LOOSEMUON = "isPFMuon && (isGlobalMuon || isCaloMuon)"
+TIGHTMUON = "isPFMuon && isGlobalMuon"
 
 PASSPROBEPSET = cms.PSet(
 	passingPFMuon = cms.string("isPFMuon"),
-	passingGlobalMuonOrTrackerMuon = cms.string("isGlobalMuon || isTrackerMuon"),
+	passingCaloMuon = cms.string("isCaloMuon"),
+	passingLooseMuon = cms.string(LOOSEMUON),
+	passingGlobalMuon = cms.string("isGlobalMuon"),
+	passingTightMuon = cms.string(TIGHTMUON),
 	passingProbeMuonCut = cms.InputTag("passProbeMuons"),
 )
 
@@ -37,24 +43,23 @@ process.GlobalTag.globaltag = GLOBALTAG
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 ###
 # datasets
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-		'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/002CEA8B-AC81-E211-A79A-002618943951.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/00DC7B9F-B681-E211-9E4B-00304867BEC0.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/009A6B2F-B081-E211-8B8B-0025905964BC.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/08127CBE-B381-E211-8925-0026189438AF.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0631B914-B881-E211-8DA4-003048FFD79C.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0A1AE15C-BA81-E211-88B2-0025905964BA.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0A03D151-B581-E211-AE9A-002618943869.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0AB0DD40-B281-E211-9D53-002618FDA207.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0A848EB0-B381-E211-ACED-003048678C3A.root',
-        	'/store/data/Run2012A/DoubleMu/RECO/22Jan2013-v1/20000/0AE7CF87-C481-E211-94FA-002618FDA279.root',
-
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0028A003-E66E-E211-9D00-1CC1DE051060.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0093E911-5A6F-E211-99BF-0017A477041C.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00B9F1D4-3B6F-E211-BEC6-0017A4770C28.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00CBB6A4-5D6F-E211-AB8A-78E7D1E49B52.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00D0FB72-366F-E211-B3E0-0017A4771018.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00F428F5-E56E-E211-99B3-0017A4770C00.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/02F5AC72-136F-E211-9185-AC162DABAF78.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
 	)
 )
 
