@@ -23,7 +23,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 	Variables = cms.PSet(
 		mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
-		eta = cms.vstring("Probe #eta", "1.2", "1.8", ""),
+		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
 	),
 	# defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
 	Categories = cms.PSet(
@@ -89,7 +89,15 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 			EfficiencyCategoryAndState = cms.vstring("Glb","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
-				pt = cms.vdouble(20.0, 60.0, 100.0),
+				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
+			),
+			BinToPDFmap = cms.vstring("voigtianPlusExponential")
+		),
+		Glb_eta = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("Glb","true"),
+		        UnbinnedVariables = cms.vstring("mass"),
+			BinnedVariables = cms.PSet(
+				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),

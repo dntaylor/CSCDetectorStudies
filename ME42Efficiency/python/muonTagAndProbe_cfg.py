@@ -9,10 +9,10 @@ MCFLAG = False 				# MC not yet implemented
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
 MUONCOLLECTION = "cleanPatMuons"
-MUONCUT = "pt>20 && 1.2<eta<1.8" 	# ME42 current eta position
+MUONCUT = "pt>20 && abs(eta)<2.4"
 
-TAGMUONCUT = MUONCUT + " && isGlobalMuon"
-PROBEMUONCUT = MUONCUT + " && isTrackerMuon"
+TAGMUONCUT = MUONCUT + " && isGlobalMuon && isPFMuon"
+PROBEMUONCUT = MUONCUT + ""
 PASSPROBEMUONCUT = ""
 
 PASSPROBEPSET = cms.PSet(
