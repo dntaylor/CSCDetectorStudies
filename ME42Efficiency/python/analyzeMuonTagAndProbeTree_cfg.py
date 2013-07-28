@@ -27,9 +27,15 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 	),
 	# defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
 	Categories = cms.PSet(
-		mcTrue = cms.vstring("MC true", "dummy[true=1,false=0]"),
-		Glb = cms.vstring("isGlobalMuon", "dummy[true=1,false=0]"),
+#		mcTrue = cms.vstring("MC true", "dummy[true=1,false=0]"),
+#		Glb = cms.vstring("isGlobalMuon", "dummy[true=1,false=0]"),
 #		TM = cms.vstring("isTrackerMuon", "dummy[true=1,false=0]"),
+		passingGlobalMuon = cms.vstring("passingGlobalMuon", "dummy[true=1,false=0]"),
+		passingCaloMuon = cms.vstring("passingCaloMuon", "dummy[true=1,false=0]"),
+		passingPFMuon = cms.vstring("passingPFMuon", "dummy[true=1,false=0]"),
+		passingLooseMuon = cms.vstring("passingLooseMuon", "dummy[true=1,false=0]"),
+		passingTightMuon = cms.vstring("passingTightMuon", "dummy[true=1,false=0]"),
+		passingProbeMuonCut = cms.vstring("passingProbeMuonCut", "dummy[true=1,false=0]"),
 	),
 	# defines all the PDFs that will be available for the efficiency calculations; uses RooFit's "factory" syntax;
 	# each pdf needs to define "signal", "backgroundPass", "backgroundFail" pdfs, "efficiency[0.9,0,1]" and "signalFractionInPassing[0.9]" are used for initial values  
@@ -85,16 +91,16 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 #			)
 #			#unspecified binToPDFmap means no fitting
 #		),
-		Glb_pt = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("Glb","true"),
+		tight_pt = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
-		Glb_eta = cms.PSet(
-			EfficiencyCategoryAndState = cms.vstring("Glb","true"),
+		tight_eta = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
