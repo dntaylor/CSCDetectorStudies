@@ -7,12 +7,11 @@ MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
-OUTPUTFILENAME = "ME42TagAndProbeTreeWithME42.root"
-#OUTPUTFILENAME = "ME42TagAndProbeTreeWithoutME42.root"
+OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 
 MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
-#ME42CUT = " && (phi<1.396 || phi>2.269)"
+NOME42CUT = " && (phi<1.396 || phi>2.269)"
 TAGMUONCOLLECTION = "muons"
 PROBEMUONCOLLECTION = "muons"
 
@@ -22,10 +21,10 @@ TAGMUONCUT = MUONCUT + \
 #	" && nMatchedStations>1 && nValidPixelHits>0" + \
 #	" && trackerLayersWithMeasurement>5" + \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
-PROBEMUONCUT = MUONCUT + ME42CUT #+ \
+PROBEMUONCUT = MUONCUT #+ \
 #	" && trackerLayersWithMeasurements>5" + \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
-PASSPROBEMUONCUT = MUONCUT + ME42CUT +\
+PASSPROBEMUONCUT = MUONCUT +\
 	" && isGlobalMuon && isPFMuon && isTrackerMuon"
 
 LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
@@ -112,6 +111,13 @@ process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 	cut = cms.string(ZMASSCUT),
 )
 
+process.probeMuonsWithME42 = process.probeMuons.clone( cut = PROBEMUONCUT + ME42CUT )
+process.passProbeMuonsWithME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + ME42CUT )
+process.probeMuonsWithoutME42 = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42CUT )
+process.passProbeMuonsWithoutME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + NOME42CUT )
+process.ZTagProbeWithME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithME42@-") )
+process.ZTagProbeWithoutME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithoutME42@-") )
+
 ###
 # produce tag and probe trees
 ###
@@ -128,15 +134,22 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 	isMC = cms.bool(MCFLAG),
 )
 
+process.tagAndProbeTreeWithME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithME42") )
+process.tagAndProbeTreeWithoutME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithoutME42") )
+
 ###
 # path
 ###
 process.TagAndProbe = cms.Path(
 	process.allMuons *
 	(process.tagMuons + process.probeMuons) *
+	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
 	process.passProbeMuons *
+	(process.passProbeMuonsWithME42 + process.passProbeMuonsWithoutME42) *
 	process.ZTagProbe *
-	process.tagAndProbeTree
+	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
+	process.tagAndProbeTree *
+	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
 	)
 
 ###
