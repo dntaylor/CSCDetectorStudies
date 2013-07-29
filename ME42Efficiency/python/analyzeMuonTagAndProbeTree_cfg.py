@@ -9,12 +9,10 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )   
 
 process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
-	InputFileNames = cms.vstring("ME42TagAndProbeTreeWithME42.root"),
-#	InputFileNames = cms.vstring("ME42TagAndProbeTreeWithoutME42.root"),
+	InputFileNames = cms.vstring("ME42TagAndProbeTree.root"),
 	InputDirectoryName = cms.string("tagAndProbeTree"),
 	InputTreeName = cms.string("fitter_tree"),
-	OutputFileName = cms.string("ME42TagAndProbeTreeWithME42Analysis.root"),
-#	OutputFileName = cms.string("ME42TagAndProbeTreeWithoutME42Analysis.root"),
+	OutputFileName = cms.string("ME42TagAndProbeTreeAnalysis.root"),
 	NumCPU = cms.uint32(1),
 	SaveWorkspace = cms.bool(True),
 	Variables = cms.PSet(
@@ -29,10 +27,8 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		passingLooseMuon = cms.vstring("isLooseMuon", "dummy[true=1,false=0]"),
 		passingTightMuon = cms.vstring("isTightMuon", "dummy[true=1,false=0]"),
 		passingProbeMuonCut = cms.vstring("passed probe cut", "dummy[true=1,false=0]"),
-		#ME42PhiRegion = cms.vstring("ME42 phi region", "dummy[true=1,false=0]"),
 	),
 	Cuts = cms.PSet(
-		# cant do phi cuts with current syntax, make cut in tree producer instead 
 	),
 	PDFs = cms.PSet(
 		gaussPlusLinear = cms.vstring(
@@ -95,7 +91,16 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 	)
 )
 
+process.TagProbeFitTreeAnalyzerWithME42 = process.TagProbeFitTreeAnalyzer.clone()
+process.TagProbeFitTreeAnalyzerWithME42.InputDirectoryName = cms.string("tagAndProbeTreeWithME42")
+process.TagProbeFitTreeAnalyzerWithME42.OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisWithME42.root")
+process.TagProbeFitTreeAnalyzerWithoutME42 = process.TagProbeFitTreeAnalyzer.clone()
+process.TagProbeFitTreeAnalyzerWithoutME42.InputDirectoryName = cms.string("tagAndProbeTreeWithoutME42")
+process.TagProbeFitTreeAnalyzerWithoutME42.OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisWithoutME42.root")
+
 process.fitness = cms.Path(
-	process.TagProbeFitTreeAnalyzer
+	process.TagProbeFitTreeAnalyzer *
+	process.TagProbeFitTreeAnalyzerWithME42 *
+	process.TagProbeFitTreeAnalyzerWithoutME42
 )
 	
