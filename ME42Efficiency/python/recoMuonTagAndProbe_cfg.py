@@ -6,14 +6,15 @@ import FWCore.ParameterSet.Config as cms
 MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
+HLTTRIGGER = cms.vstring( 'HLT_IsoMu24_v*', 'HLT_IsoMu24_eta2p1_v*', 'HLT_Mu40_v*', 'HLT_Mu40_eta2p1_v*' )
 
 OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 
 MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
 NOME42CUT = " && (phi<1.396 || phi>2.269)"
-TAGMUONCOLLECTION = "muons"
-PROBEMUONCOLLECTION = "muons"
+TAGMUONCOLLECTION = "allMuons"
+PROBEMUONCOLLECTION = "allMuons"
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" #+ \
@@ -79,13 +80,19 @@ process.source = cms.Source("PoolSource",
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ###
-# merge muons with calomuons
+# merge muons
 ###
 from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 process.allMuons = cms.EDProducer("CaloMuonMerger",
+	mergeTracks = cms.bool(True),
+	mergeCaloMuons = cms.bool(False),
 	muons = cms.InputTag("muons"), 
 	caloMuons = cms.InputTag("calomuons"),
+	tracks = cms.InputTag("generalTracks"),
 	minCaloCompatibility = calomuons.minCaloCompatibility,
+	muonsCut     = cms.string("pt > 3 && track.isNonnull"),
+	caloMuonsCut = cms.string("pt > 3"),
+	tracksCut    = cms.string("pt > 3"),
 )
 
 ###
