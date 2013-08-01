@@ -69,6 +69,12 @@ process.source = cms.Source("PoolSource",
 #		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
 #		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
 #		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
+		'/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE606687-E570-E211-86FF-E0CB4E1A1182.root',
+                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE3B6744-5D74-E211-941D-BCAEC50971F9.root',
+                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE1140ED-B870-E211-8D82-485B39800B8D.root',
+                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE98E065-5D72-E211-8D86-20CF305616D0.root',
+                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE8A9D5D-7072-E211-82CB-00259073E36E.root',
+
 	)
 )
 
@@ -137,6 +143,7 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
 		numberOfMatchedStations = cms.string("numberOfMatchedStations"),
+		numberOfValidMuonHits = cms.string("generalTrack().hitPattern().numberOfValidMuonHits"),
 	),
 	flags = cms.PSet(
 		passingPFMuon = cms.string("isPFMuon"),
