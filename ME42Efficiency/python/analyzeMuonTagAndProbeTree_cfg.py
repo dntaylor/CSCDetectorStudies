@@ -27,6 +27,8 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		passingLooseMuon = cms.vstring("isLooseMuon", "dummy[true=1,false=0]"),
 		passingTightMuon = cms.vstring("isTightMuon", "dummy[true=1,false=0]"),
 		passingProbeMuonCut = cms.vstring("passed probe cut", "dummy[true=1,false=0]"),
+		passing3Of4Stations = cms.vstring("LCT in 3 stations", "dummy[true=1,false=0]"),
+		passing4Of4Stations = cms.vstring("LCT in 4 stations", "dummy[true=1,false=0]"),
 	),
 	Cuts = cms.PSet(
 	),

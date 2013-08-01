@@ -17,32 +17,27 @@ TAGMUONCOLLECTION = "allMuons"
 PROBEMUONCOLLECTION = "allMuons"
 
 TAGMUONCUT = MUONCUT + \
-	" && isGlobalMuon && isPFMuon" #+ \
-#	" && nChi2<10.0 && nValidMuonHits > 0" + \
-#	" && nMatchedStations>1 && nValidPixelHits>0" + \
-#	" && trackerLayersWithMeasurement>5" + \
+	" && isGlobalMuon && isPFMuon" + \
+	" && globalTrack().normalizedChi2<10.0" + \
+	" && globalTrack().hitPattern().numberOfValidMuonHits > 0" + \
+	" && globalTrack().hitPattern().numberOfValidPixelHits>0" + \
+	" && numberOfMatchedStations>1" + \
+	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
 PROBEMUONCUT = MUONCUT #+ \
-#	" && trackerLayersWithMeasurements>5" + \
+#	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
 PASSPROBEMUONCUT = MUONCUT +\
 	" && isGlobalMuon && isPFMuon && isTrackerMuon"
+REQUIRE3OF4CSC = " && numberOfMatchedStations>2"
+REQUIRE4OF4CSC = " && numberOfMatchedStations>3"
 
 LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
-TIGHTMUON = "isPFMuon && isGlobalMuon" #+ \
-#	" && nChi2<10.0 && nValidMuonHits>0" + \
-#	" && nMatchedStations>1 && nValidPixelHits>0" + \
-#	" && trackerLayersWithMeasurement>5"
-
-PASSPROBEPSET = cms.PSet(
-	passingPFMuon = cms.string("isPFMuon"),
-	passingCaloMuon = cms.string("isCaloMuon"),
-	passingTrackerMuon = cms.string("isTrackerMuon"),
-	passingLooseMuon = cms.string(LOOSEMUON),
-	passingGlobalMuon = cms.string("isGlobalMuon"),
-	passingTightMuon = cms.string(TIGHTMUON),
-	passingProbeMuonCut = cms.InputTag("passProbeMuons"),
-)
+TIGHTMUON = "isPFMuon && isGlobalMuon" + \
+	" && globalTrack().normalizedChi2<10.0" + \
+	" && globalTrack().hitPattern().numberOfValidMuonHits>0" + \
+	" && nMatchedStations>1 && globalTrack().hitPattern().numberOfValidPixelHits>0" + \
+	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5"
 
 ZMASSCUT = "60.0 < mass < 120.0"
 
@@ -135,8 +130,19 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		pt = cms.string("pt"),
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
+		numberOfMatchedStations = cms.string("numberOfMatchedStations"),
 	),
-	flags = PASSPROBEPSET,
+	flags = cms.PSet(
+		passingPFMuon = cms.string("isPFMuon"),
+		passingCaloMuon = cms.string("isCaloMuon"),
+		passingTrackerMuon = cms.string("isTrackerMuon"),
+		passingLooseMuon = cms.string(LOOSEMUON),
+		passingGlobalMuon = cms.string("isGlobalMuon"),
+		passingTightMuon = cms.string(TIGHTMUON),
+		passingProbeMuonCut = cms.InputTag("passProbeMuons"),
+		passing3Of4Stations = cms.string("numberOfMatchedStations>2"),
+		passing4Of4Stations = cms.string("numberOfMatchedStations>3"),
+	),
 	addRunLumiInfo = cms.bool(True),
 	isMC = cms.bool(MCFLAG),
 )
