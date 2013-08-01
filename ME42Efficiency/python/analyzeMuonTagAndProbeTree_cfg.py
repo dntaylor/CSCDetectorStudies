@@ -19,6 +19,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
+	#	numberOfValidMuonHits("number of valid muon hits","0","10",""),
 	),
 	Categories = cms.PSet(
 		passingGlobalMuon = cms.vstring("isGlobalMuon", "dummy[true=1,false=0]"),
@@ -84,6 +85,38 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		),
 		loose_eta = cms.PSet(
 			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
+		        UnbinnedVariables = cms.vstring("mass"),
+			BinnedVariables = cms.PSet(
+				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
+			),
+			BinToPDFmap = cms.vstring("voigtianPlusExponential")
+		),
+		loose_pt_3of4 = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","passing3Of4Stations","true"),
+		        UnbinnedVariables = cms.vstring("mass"),
+			BinnedVariables = cms.PSet(
+				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
+			),
+			BinToPDFmap = cms.vstring("voigtianPlusExponential")
+		),
+		loose_eta_3of4 = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","passing3Of4Stations","true"),
+		        UnbinnedVariables = cms.vstring("mass"),
+			BinnedVariables = cms.PSet(
+				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
+			),
+			BinToPDFmap = cms.vstring("voigtianPlusExponential")
+		),
+		loose_pt_4of4 = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","passing4Of4Stations","true"),
+		        UnbinnedVariables = cms.vstring("mass"),
+			BinnedVariables = cms.PSet(
+				pt = cms.vdouble(20.0, 60.0, 100.0, 200.0, 500.0),
+			),
+			BinToPDFmap = cms.vstring("voigtianPlusExponential")
+		),
+		loose_eta_4of4 = cms.PSet(
+			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true","passing4Of4Stations","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
 				eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),

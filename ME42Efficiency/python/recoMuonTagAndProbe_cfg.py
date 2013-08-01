@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 
 ###
 # User configurable parameters
@@ -13,8 +14,8 @@ OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
 NOME42CUT = " && (phi<1.396 || phi>2.269)"
-TAGMUONCOLLECTION = "allMuons"
-PROBEMUONCOLLECTION = "allMuons"
+TAGMUONCOLLECTION = "muons"
+PROBEMUONCOLLECTION = "generalTracks"
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -59,26 +60,26 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0028A003-E66E-E211-9D00-1CC1DE051060.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0093E911-5A6F-E211-99BF-0017A477041C.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00B9F1D4-3B6F-E211-BEC6-0017A4770C28.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00CBB6A4-5D6F-E211-AB8A-78E7D1E49B52.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00D0FB72-366F-E211-B3E0-0017A4771018.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00F428F5-E56E-E211-99B3-0017A4770C00.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/02F5AC72-136F-E211-9185-AC162DABAF78.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
-#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
-		'/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE606687-E570-E211-86FF-E0CB4E1A1182.root',
-                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE3B6744-5D74-E211-941D-BCAEC50971F9.root',
-                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE1140ED-B870-E211-8D82-485B39800B8D.root',
-                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE98E065-5D72-E211-8D86-20CF305616D0.root',
-                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE8A9D5D-7072-E211-82CB-00259073E36E.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0028A003-E66E-E211-9D00-1CC1DE051060.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0093E911-5A6F-E211-99BF-0017A477041C.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00B9F1D4-3B6F-E211-BEC6-0017A4770C28.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00CBB6A4-5D6F-E211-AB8A-78E7D1E49B52.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00D0FB72-366F-E211-B3E0-0017A4771018.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00F428F5-E56E-E211-99B3-0017A4770C00.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/02F5AC72-136F-E211-9185-AC162DABAF78.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
+		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
+#		'/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE606687-E570-E211-86FF-E0CB4E1A1182.root',
+#                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE3B6744-5D74-E211-941D-BCAEC50971F9.root',
+#                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE1140ED-B870-E211-8D82-485B39800B8D.root',
+#                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE98E065-5D72-E211-8D86-20CF305616D0.root',
+#                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE8A9D5D-7072-E211-82CB-00259073E36E.root',
 
 	)
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 ###
 # only process good lumis
@@ -89,10 +90,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 ###
 # merge muons
 ###
-from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
+#from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 process.allMuons = cms.EDProducer("CaloMuonMerger",
 	mergeTracks = cms.bool(True),
-	mergeCaloMuons = cms.bool(False),
+	mergeCaloMuons = cms.bool(True),
 	muons = cms.InputTag("muons"), 
 	caloMuons = cms.InputTag("calomuons"),
 	tracks = cms.InputTag("generalTracks"),
@@ -110,7 +111,11 @@ process.tagMuons = cms.EDFilter("MuonRefSelector",
 	cut = cms.string(TAGMUONCUT),
 )
 
-process.probeMuons = cms.EDFilter("MuonRefSelector",
+#process.probeMuons = cms.EDFilter("MuonRefSelector",
+#	src = cms.InputTag(PROBEMUONCOLLECTION),
+#	cut = cms.string(PROBEMUONCUT),
+#)
+process.probeMuons = cms.EDFilter("RecoChargedCandidateRefSelector",
 	src = cms.InputTag(PROBEMUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )
@@ -142,8 +147,8 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		pt = cms.string("pt"),
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
-		numberOfMatchedStations = cms.string("numberOfMatchedStations"),
-		numberOfValidMuonHits = cms.string("generalTrack().hitPattern().numberOfValidMuonHits"),
+#		numberOfMatchedStations = cms.string("numberOfMatchedStations"),
+#		numberOfValidMuonHits = cms.string("globalTrack().hitPattern().numberOfValidMuonHits"),
 	),
 	flags = cms.PSet(
 		passingPFMuon = cms.string("isPFMuon"),
