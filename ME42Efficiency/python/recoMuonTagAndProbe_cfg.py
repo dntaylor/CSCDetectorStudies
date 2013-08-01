@@ -15,7 +15,7 @@ MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
 NOME42CUT = " && (phi<1.396 || phi>2.269)"
 TAGMUONCOLLECTION = "muons"
-PROBEMUONCOLLECTION = "generalTracks"
+PROBEMUONCOLLECTION = "allTracks"
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -60,22 +60,22 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0028A003-E66E-E211-9D00-1CC1DE051060.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0093E911-5A6F-E211-99BF-0017A477041C.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00B9F1D4-3B6F-E211-BEC6-0017A4770C28.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00CBB6A4-5D6F-E211-AB8A-78E7D1E49B52.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00D0FB72-366F-E211-B3E0-0017A4771018.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00F428F5-E56E-E211-99B3-0017A4770C00.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/02F5AC72-136F-E211-9185-AC162DABAF78.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
-		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0028A003-E66E-E211-9D00-1CC1DE051060.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/0093E911-5A6F-E211-99BF-0017A477041C.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00B9F1D4-3B6F-E211-BEC6-0017A4770C28.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00CBB6A4-5D6F-E211-AB8A-78E7D1E49B52.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00D0FB72-366F-E211-B3E0-0017A4771018.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/00F428F5-E56E-E211-99B3-0017A4770C00.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/02F5AC72-136F-E211-9185-AC162DABAF78.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/043DDB54-FF6E-E211-93B0-00266CFFC550.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/049A483F-E66E-E211-916E-1CC1DE05D2F8.root',
+#		'/store/data/Run2012A/SingleMu/RECO/22Jan2013-v1/20000/04D14EC2-166F-E211-A932-1CC1DE046F00.root',
 #		'/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE606687-E570-E211-86FF-E0CB4E1A1182.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE3B6744-5D74-E211-941D-BCAEC50971F9.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE1140ED-B870-E211-8D82-485B39800B8D.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE98E065-5D72-E211-8D86-20CF305616D0.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE8A9D5D-7072-E211-82CB-00259073E36E.root',
-
+		'file:SingleMu_Run2012A_RECO.root'
 	)
 )
 
@@ -109,39 +109,91 @@ process.allMuons = cms.EDProducer("CaloMuonMerger",
 process.tagMuons = cms.EDFilter("MuonRefSelector",
 	src = cms.InputTag(TAGMUONCOLLECTION),
 	cut = cms.string(TAGMUONCUT),
+	filter = cms.bool(True),
 )
 
 #process.probeMuons = cms.EDFilter("MuonRefSelector",
 #	src = cms.InputTag(PROBEMUONCOLLECTION),
 #	cut = cms.string(PROBEMUONCUT),
 #)
-process.probeMuons = cms.EDFilter("RecoChargedCandidateRefSelector",
-	src = cms.InputTag(PROBEMUONCOLLECTION),
-	cut = cms.string(PROBEMUONCUT),
+process.allTracks = cms.EDProducer("TrackViewCandidateProducer",
+	src = cms.InputTag("generalTracks"),
+	particleType = cms.string('mu+'),
+	cut = cms.string('pt > 0'),
+	filter = cms.bool(True),
 )
 
-process.passProbeMuons = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(PROBEMUONCOLLECTION),
-	cut = cms.string(PASSPROBEMUONCUT),
-)
+#process.standaloneTracks = cms.EDProducer("TrackViewCandidateProducer",
+#	src = cms.InputTag("standAloneMuons","UpdatedAtVtx"),
+#	particleType = cms.string('mu+'),
+#	cut = cms.string(''),
+#	filter = cms.bool(True),
+#)
+#
+#process.standaloneCandidates = cms.EDFilter("RecoChargedCandidateRefSelector",
+#	src = cms.InputTag("standaloneTracks"),
+#	cut = cms.string(PROBEMUONCUT),
+#	filter = cms.bool(True),
+#)
+#
+#process.trackCandidates = cms.EDFilter("RecoChargedCandidateRefSelector",
+#	src = cms.InputTag('allTracks'),
+#	cut = cms.string(PROBEMUONCUT),
+#	filter = cms.bool(True),
+#)
+#
+#process.trackStandaloneMap = cms.EDProducer("TrivialDeltaRViewMatcher",
+#	src = cms.InputTag("trackCandidates"),
+#	distMin = cms.double(0.15),
+#	matched = cms.InputTag('standaloneCandidates'),
+#	filter = cms.bool(True),
+#)
+#
+#process.trackStandaloneMatched = cms.EDProducer("RecoChargedCandidateMatchedProbeMaker",
+#	Matched = cms.untracked.bool(True),
+#	ReferenceSource = cms.untracked.InputTag('standaloneCandidates'),
+#	ResMatchMapSource = cms.untracked.InputTag('trackStandaloneMap'),
+#	CandidateSource = cms.untracked.InputTag('trackCandidates'),
+#	filter = cms.bool(True),
+#)
+#
+#process.trackStandaloneUnmatched = process.trackStandaloneMatched.clone(Matched = cms.untracked.bool(True))
+
+#process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
+#	decay = cms.string("tagMuons@+ probeMuons@-"),
+#	cut = cms.string(ZMASSCUT),
+#)
 
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
-	decay = cms.string("tagMuons@+ probeMuons@-"),
+	decay = cms.string("tagMuons@+ allTracks@-"),
 	cut = cms.string(ZMASSCUT),
 )
 
-process.probeMuonsWithME42 = process.probeMuons.clone( cut = PROBEMUONCUT + ME42CUT )
-process.passProbeMuonsWithME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + ME42CUT )
-process.probeMuonsWithoutME42 = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42CUT )
-process.passProbeMuonsWithoutME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + NOME42CUT )
-process.ZTagProbeWithME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithME42@-") )
-process.ZTagProbeWithoutME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithoutME42@-") )
+#process.ZTagProbeMap = cms.EDProducer("TagProbeMassProducer",
+#	MassMaxCut = cms.untracked.double(120.0),
+#	TagCollection = cms.InputTag("tagMuons"),
+#	MassMinCut = cms.untracked.double(60.0),
+#	ProbeCollection = cms.InputTag("trackCandidates"),
+#	PassingProbeCollection = cms.InputTag('trackStandaloneMatched'),
+#)
+#
+#process.ZTagProbeFilter = cms.EDFilter("TagProbeMassEDMFilter",
+#	tpMapName = cms.string('ZTagProbeMap'),
+#)
+#
+#process.probeMuonsWithME42 = process.probeMuons.clone( cut = PROBEMUONCUT + ME42CUT )
+#process.passProbeMuonsWithME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + ME42CUT )
+#process.probeMuonsWithoutME42 = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42CUT )
+#process.passProbeMuonsWithoutME42 = process.passProbeMuons.clone( cut = PASSPROBEMUONCUT + NOME42CUT )
+#process.ZTagProbeWithME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithME42@-") )
+#process.ZTagProbeWithoutME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithoutME42@-") )
 
 ###
 # produce tag and probe trees
 ###
 process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 	tagProbePairs = cms.InputTag("ZTagProbe"),
+#	tagProbePairs = cms.InputTag("ZTagProbeMap"),
 	arbitration = cms.string("OneProbe"),
 	variables = cms.PSet(
 		pt = cms.string("pt"),
@@ -157,7 +209,7 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		passingLooseMuon = cms.string(LOOSEMUON),
 		passingGlobalMuon = cms.string("isGlobalMuon"),
 		passingTightMuon = cms.string(TIGHTMUON),
-		passingProbeMuonCut = cms.InputTag("passProbeMuons"),
+#		passingProbeMuonCut = cms.InputTag("passProbeMuons"),
 		passing3Of4Stations = cms.string("numberOfMatchedStations>2"),
 		passing4Of4Stations = cms.string("numberOfMatchedStations>3"),
 	),
@@ -165,23 +217,32 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 	isMC = cms.bool(MCFLAG),
 )
 
-process.tagAndProbeTreeWithME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithME42") )
-process.tagAndProbeTreeWithoutME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithoutME42") )
+#process.tagAndProbeTreeWithME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithME42") )
+#process.tagAndProbeTreeWithoutME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithoutME42") )
 
 ###
 # path
 ###
 process.TagAndProbe = cms.Path(
 	process.allMuons *
-	(process.tagMuons + process.probeMuons) *
-	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
-	process.passProbeMuons *
-	(process.passProbeMuonsWithME42 + process.passProbeMuonsWithoutME42) *
+	process.allTracks *
+#	(process.tagMuons + process.probeMuons) *
+	process.tagMuons *
+#	(process.allTracks + process.standaloneTracks) *
+#	(process.trackCandidates + process.standaloneCandidates) *
+#	process.trackStandaloneMap *
+#	process.trackStandaloneMatched *
+#	process.trackStandaloneUnmatched *
+#	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
+#	process.passProbeMuons *
+#	(process.passProbeMuonsWithME42 + process.passProbeMuonsWithoutME42) *
 	process.ZTagProbe *
-	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
-	process.tagAndProbeTree *
-	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
-	)
+#	process.ZTagProbeMap *
+#	process.ZTagProbeFilter *
+#	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
+	process.tagAndProbeTree 
+#	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
+)
 
 ###
 # output
