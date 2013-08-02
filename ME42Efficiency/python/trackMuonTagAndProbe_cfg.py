@@ -119,15 +119,53 @@ process.probeMuons = cms.EDFilter("MuonRefSelector",
 	cut = cms.string(PROBEMUONCUT),
 )
 
-process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.trackCands = cms.EDProducer("ConcreteChargedCandidateProducer",
 	src = cms.InputTag("generalTracks"),
 	particleType = cms.string("mu+"),
 	cut = cms.string(TAGMUONCUT),
 )
 
+process.tkTracks = cms.EDProducer("ConcreteChargedCandidateProducer", 
+	src  = cms.InputTag("generalTracks"),
+	particleType = cms.string("mu+"),
+)
+
+process.tkProbes = cms.EDFilter("CandViewRefSelector",
+	src = cms.InputTag("tkTracks"),
+	cut = cms.string(PROBEMUONCUT),
+)
+
+process.staTracks = cms.EDProducer("ConcreteChargedCandidateProducer",
+	src  = cms.InputTag("standAloneMuons","UpdatedAtVtx"),
+	particleType = cms.string("mu+"),
+)
+
+process.staProbes = cms.EDFilter("CandViewRefSelector",
+	src = cms.InputTag("staTracks"),
+	cut = cms.string(PROBEMUONCUT),
+)
+
+process.staToTkMatch = cms.EDProducer("MatcherUsingTracks",
+	src = cms.InputTag("staTracks"),
+	matched = cms.InputTag("tkTracks"),
+	algorithm = cms.string("byDirectComparison"), 
+	srcTrack = cms.string("tracker"), 
+	srcState = cms.string("atVertex"), 
+	matchedTrack = cms.string("tracker"),
+	matchedState = cms.string("atVertex"),
+	maxDeltaR = cms.double(1.),   
+	maxDeltaEta = cms.double(0.4),  
+	maxDeltaLocalPos = cms.double(100),
+	maxDeltaPtRel = cms.double(5),
+	sortBy = cms.string("deltaR"),
+)
+process.staPassingTk = cms.EDProducer("MatchedCandidateSelector", # doesnt recognize this
+	src = cms.InputTag("staProbes"),
+	match = cms.InputTag("staToTkMatch"),
+)
+
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
-	decay = cms.string("tagMuons@+ allMuons@-"),
+	decay = cms.string("tagMuons@+ staPassingTk@-"),
 	cut = cms.string(ZMASSCUT),
 )
 
@@ -170,15 +208,19 @@ process.tagAndProbeTreeWithoutME42 = process.tagAndProbeTree.clone( tagProbePair
 # path
 ###
 process.TagAndProbe = cms.Path(
-	process.allMuons *
+#	process.allMuons *
 	process.tagMuons *
-	process.probeMuons *
-	process.trackCands *
-	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
+#	process.probeMuons *
+#	process.trackCands *
+	(process.tkTracks + process.staTracks) *
+	(process.tkProbes + process.staProbes) *
+	process.staToTkMatch *
+	process.staPassingTk *
+#	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
 	process.ZTagProbe *
-	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
-	process.tagAndProbeTree * 
-	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
+#	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
+	process.tagAndProbeTree #* 
+#	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
 )
 
 ###
