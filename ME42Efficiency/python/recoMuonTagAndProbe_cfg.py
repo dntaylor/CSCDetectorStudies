@@ -15,7 +15,7 @@ MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
 NOME42CUT = " && (phi<1.396 || phi>2.269)"
 TAGMUONCOLLECTION = "muons"
-PROBEMUONCOLLECTION = "allMuons" # includes muons,calomuons, generalTracks
+PROBEMUONCOLLECTION = "allMuons" # includes muons,calomuons
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -119,15 +119,8 @@ process.probeMuons = cms.EDFilter("MuonRefSelector",
 	cut = cms.string(PROBEMUONCUT),
 )
 
-process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
-process.trackCands = cms.EDProducer("ConcreteChargedCandidateProducer",
-	src = cms.InputTag("generalTracks"),
-	particleType = cms.string("mu+"),
-	cut = cms.string(TAGMUONCUT),
-)
-
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
-	decay = cms.string("tagMuons@+ allMuons@-"),
+	decay = cms.string("tagMuons@+ probeMuons@-"),
 	cut = cms.string(ZMASSCUT),
 )
 
@@ -173,7 +166,6 @@ process.TagAndProbe = cms.Path(
 	process.allMuons *
 	process.tagMuons *
 	process.probeMuons *
-	process.trackCands *
 	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
 	process.ZTagProbe *
 	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
