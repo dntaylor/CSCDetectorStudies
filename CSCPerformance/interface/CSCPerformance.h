@@ -41,6 +41,8 @@
 #include "DataFormats/L1GlobalMuonTrigger/interface/L1MuGMTReadoutCollection.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/MuonDetId/interface/RPCDetId.h"
+#include "DataFormats/MuonDetId/interface/DTChamberId.h"
 // root
 #include "TFile.h"
 #include "TH1.h"
@@ -69,6 +71,7 @@ class CSCPerformance : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>);
       virtual void outputDetID(reco::Muon);
+      virtual bool hasChamber(reco::Muon, int);
 
       // ----------member data ---------------------------
       edm::InputTag cscRecHitTag;

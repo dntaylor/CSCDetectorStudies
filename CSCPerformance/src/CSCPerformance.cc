@@ -113,20 +113,22 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon)
    {
       // select ME4/2 region
-      if (muon->eta()>1.2 && muon->eta()< 1.8 && muon->phi()>1.396 && muon->phi()<2.269) {
+      if (muon->eta()>1.2 && muon->eta()<1.8 && muon->phi()>1.396 && muon->phi()<2.269) {
          hists["numChambersME42"]->Fill(muon->numberOfMatchedStations());
-         if (muon->numberOfMatchedStations()==5) {
-            std::cout << "5 matched stations in ME4/2 region" << std::endl;
-            outputDetID(*muon);
-         }
+//         if (muon->numberOfMatchedStations()==5) {
+//            std::cout << "5 matched stations in ME4/2 region" << std::endl;
+//            outputDetID(*muon);
+//         }
       }
       else if (TMath::Abs(muon->eta())>1.2 && TMath::Abs(muon->eta())<1.8) {
          hists["numChambersNonME42"]->Fill(muon->numberOfMatchedStations());
-         if (muon->numberOfMatchedStations()==4) {
-            std::cout << "4 matched stations in non-ME4/2 region" << std::endl;
-            outputDetID(*muon);
-         }
+//         if (muon->numberOfMatchedStations()==4) {
+//            std::cout << "4 matched stations in non-ME4/2 region" << std::endl;
+//            outputDetID(*muon);
+//         }
       }
+      
+      // now find what the hit pattern is
    }   
 }
 
@@ -136,10 +138,36 @@ CSCPerformance::outputDetID(reco::Muon muon)
 {
    for (std::vector<reco::MuonChamberMatch>::const_iterator chamber = muon.matches().begin(); chamber != muon.matches().end(); ++chamber)
    {
-      std::cout << "   " << chamber->detector() << " " << chamber->station() << std::endl;
+        DetId::Detector det = chamber->id.det();
+        int subdet = chamber->id.subdetId();
+        if (det==2 && subdet==1) {
+           std::cout << (DTChamberId)(chamber->id) << std::endl;
+        }
+        else if (det==2 && subdet==2) {
+           std::cout << (CSCDetId)(chamber->id) << std::endl;
+        }
+        else if (det==2 && subdet==3) {
+//           std::cout << (RPCDetId)(chamber->id) << std::endl;
+        }
    }
 }
 
+// Method to see if the track has a chamber in the station
+bool
+CSCPerformance::hasChamber(reco::Muon muon, int station)
+{
+   for (std::vector<reco::MuonChamberMatch>::const_iterator chamber = muon.matches().begin(); chamber != muon.matches().end(); ++chamber)
+   {
+        DetId::Detector det = chamber->id.det();
+        int subdet = chamber->id.subdetId();
+        if (det==2 && subdet==2) {
+           if (((CSCDetId)(chamber->id)).station() == station) {
+              return true;
+           }
+        }
+   }
+   return false;
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(CSCPerformance);
