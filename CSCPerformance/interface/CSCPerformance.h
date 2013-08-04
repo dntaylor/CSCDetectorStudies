@@ -22,14 +22,30 @@
 // system include files
 #include <memory>
 
-// user include files
+// framework
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+// Data formats
+#include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
+#include "DataFormats/CSCRecHit/interface/CSCRecHit2DCollection.h"
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/L1GlobalMuonTrigger/interface/L1MuGMTReadoutCollection.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+// root
+#include "TFile.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TMath.h"
 //
 // class declaration
 //
@@ -51,8 +67,15 @@ class CSCPerformance : public edm::EDAnalyzer {
       virtual void endRun(edm::Run const&, edm::EventSetup const&);
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
+      virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>);
 
       // ----------member data ---------------------------
+      edm::InputTag cscRecHitTag;
+      edm::InputTag cscSegmentTag;
+      edm::InputTag saMuonTag;
+      edm::InputTag allMuonsTag;
+
+      std::map<std::string,TH1*> hists;
 };
 
 //

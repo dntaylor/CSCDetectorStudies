@@ -1,4 +1,4 @@
-#include "CSCPerformance/interface/CSCPerformance.h"
+#include "CSCDetectorStudies/CSCPerformance/interface/CSCPerformance.h"
 
 //
 // static data member definitions
@@ -10,16 +10,24 @@
 CSCPerformance::CSCPerformance(const edm::ParameterSet& iConfig)
 
 {
-   //now do what ever initialization is needed
+   // get input tags
+   cscRecHitTag  = iConfig.getParameter<edm::InputTag>("cscRecHitTag");
+   cscSegmentTag = iConfig.getParameter<edm::InputTag>("cscSegmentTag");
+   saMuonTag     = iConfig.getParameter<edm::InputTag>("saMuonTag");
+   allMuonsTag   = iConfig.getParameter<edm::InputTag>("allMuonsTag");
+   
+   edm::Service<TFileService> fileService;
 
+   hists["numChambersME42"] = fileService->make<TH1F>("numChambersME42","Number of Matched Stations in ME4/2 Region",6,-0.5,5.5);
+   hists["numChambersNonME42"] = fileService->make<TH1F>("numChambersNonME42","Number of Matched Stations in Non-ME4/2 Region",6,-0.5,5.5);
 }
 
 
 CSCPerformance::~CSCPerformance()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+   // normalize histograms
+   hists["numChambersME42"]->Scale(1.0/hists["numChambersME42"]->Integral());
+   hists["numChambersNonME42"]->Scale(1.0/hists["numChambersNonME42"]->Integral());
 
 }
 
@@ -34,17 +42,18 @@ CSCPerformance::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
 
+   // get parameters
+   Handle<CSCRecHit2DCollection> recHits;
+   Handle<CSCSegmentCollection> cscSegments;
+   Handle<reco::TrackCollection> saMuons;
+   Handle<reco::MuonCollection> allMuons;
+   iEvent.getByLabel(cscRecHitTag,recHits);
+   iEvent.getByLabel(cscSegmentTag, cscSegments);
+   iEvent.getByLabel(saMuonTag,saMuons);
+   iEvent.getByLabel(allMuonsTag,allMuons);
 
-
-#ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
-#endif
-   
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
-#endif
+   // plot number of chambers in each muon for ME4/2 region
+   plotMatchedChambers(allMuons); 
 }
 
 
@@ -92,6 +101,25 @@ CSCPerformance::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
+}
+
+// method to plot number of muons v number of matched chambers in a given region
+void
+CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)
+{
+   // ME+4/2 region
+   // eta = [1.2,1.8], phi = [1.396,2.269]
+   
+   for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon)
+   {
+      // select ME4/2 region
+      if (muon->eta()>1.2 && muon->eta()< 1.8 && muon->phi()>1.396 && muon->phi()<2.269) {
+         hists["numChambersME42"]->Fill(muon->numberOfMatchedStations());
+      }
+      else if (TMath::Abs(muon->eta())>1.2 && TMath::Abs(muon->eta())<1.8) {
+         hists["numChambersNonME42"]->Fill(muon->numberOfMatchedStations());
+      }
+   }   
 }
 
 //define this as a plug-in
