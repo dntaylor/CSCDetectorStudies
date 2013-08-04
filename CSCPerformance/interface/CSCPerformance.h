@@ -68,6 +68,7 @@ class CSCPerformance : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>);
+      virtual void outputDetID(reco::Muon);
 
       // ----------member data ---------------------------
       edm::InputTag cscRecHitTag;

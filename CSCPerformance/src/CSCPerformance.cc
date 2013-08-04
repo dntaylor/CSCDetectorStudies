@@ -115,12 +115,31 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)
       // select ME4/2 region
       if (muon->eta()>1.2 && muon->eta()< 1.8 && muon->phi()>1.396 && muon->phi()<2.269) {
          hists["numChambersME42"]->Fill(muon->numberOfMatchedStations());
+         if (muon->numberOfMatchedStations()==5) {
+            std::cout << "5 matched stations in ME4/2 region" << std::endl;
+            outputDetID(*muon);
+         }
       }
       else if (TMath::Abs(muon->eta())>1.2 && TMath::Abs(muon->eta())<1.8) {
          hists["numChambersNonME42"]->Fill(muon->numberOfMatchedStations());
+         if (muon->numberOfMatchedStations()==4) {
+            std::cout << "4 matched stations in non-ME4/2 region" << std::endl;
+            outputDetID(*muon);
+         }
       }
    }   
 }
+
+// Method to output csc detector ID for all segments in a muon track
+void
+CSCPerformance::outputDetID(reco::Muon muon)
+{
+   for (std::vector<reco::MuonChamberMatch>::const_iterator chamber = muon.matches().begin(); chamber != muon.matches().end(); ++chamber)
+   {
+      std::cout << "   " << chamber->detector() << " " << chamber->station() << std::endl;
+   }
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(CSCPerformance);
