@@ -72,6 +72,8 @@ class CSCPerformance : public edm::EDAnalyzer {
       virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>);
       virtual void outputDetID(reco::Muon);
       virtual bool hasChamber(reco::Muon, int);
+      virtual int numberOfMatchedCSCStations(reco::Muon);
+      virtual int getHitPattern(reco::Muon);
 
       // ----------member data ---------------------------
       edm::InputTag cscRecHitTag;
