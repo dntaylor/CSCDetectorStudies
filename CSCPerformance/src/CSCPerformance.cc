@@ -60,7 +60,7 @@ CSCPerformance::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByLabel(allMuonsTag,allMuons);
 
    // plot number of chambers in each muon for ME4/2 region
-   plotMatchedChambers(allMuons); 
+   plotMatchedChambers(allMuons,saMuons); 
 }
 
 
@@ -112,7 +112,7 @@ CSCPerformance::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 
 // method to plot number of muons v number of matched chambers in a given region
 void
-CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)
+CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons, edm::Handle<reco::TrackCollection> tracks)
 {
    // ME+4/2 region
    // eta = [1.2,1.8], phi = [1.396,2.269]
@@ -135,13 +135,27 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)
       else if (nonME42) {
          hists["numChambersNonME42"]->Fill(numberOfMatchedCSCStations(*muon));
          hists["hitPatternNonME42"]->Fill(getHitPattern(*muon));
-         if (numberOfMatchedCSCStations(*muon)==4) {
-            std::cout << "---------------" << std::endl << "4 in non-ME42" << std::endl;
-            outputDetID(*muon);
-            std::cout << "phi: " << muon->phi() << " eta: " << muon->eta() << std::endl;
-         }
-      }
+//         if (numberOfMatchedCSCStations(*muon)==4) {
+//            std::cout << "---------------" << std::endl << "4 in non-ME42" << std::endl;
+//            outputDetID(*muon);
+//            std::cout << "phi: " << muon->phi() << " eta: " << muon->eta() << std::endl;
+//         }
+      } 
    }   
+   for (reco::TrackCollection::const_iterator track = tracks->begin(); track != tracks->end(); ++track)
+   {
+      bool ME42 = (track->outerEta()>etaMin && track->outerEta()<etaMax && track->outerPhi()>phiMin && track->outerPhi()<phiMax);
+      bool nonME42 = (TMath::Abs(track->outerEta())>etaMin && TMath::Abs(track->outerEta())<etaMax && (track->outerPhi()<outPhiMin || track->outerPhi()>outPhiMax));
+      if (ME42) {
+         std::cout << "---------------" << std::endl;
+         DetId theId = new DetId(track->outerDetId());
+         std::cout << "DetID: " << (CSCDetId)(theId.id) << std::endl;
+         std::cout << "outerPhi: " << track->outerPhi() << " outerEta: " << track->outerEta() << std::endl;
+      }
+      else if (nonME42) {
+
+      }
+   }
 }
 
 // Method to output csc detector ID for all segments in a muon track
