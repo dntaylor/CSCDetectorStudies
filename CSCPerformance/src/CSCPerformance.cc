@@ -147,13 +147,26 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons, edm
       bool ME42 = (track->outerEta()>etaMin && track->outerEta()<etaMax && track->outerPhi()>phiMin && track->outerPhi()<phiMax);
       bool nonME42 = (TMath::Abs(track->outerEta())>etaMin && TMath::Abs(track->outerEta())<etaMax && (track->outerPhi()<outPhiMin || track->outerPhi()>outPhiMax));
       if (ME42) {
-         std::cout << "---------------" << std::endl;
-         DetId theId = new DetId(track->outerDetId());
-         std::cout << "DetID: " << (CSCDetId)(theId.id) << std::endl;
-         std::cout << "outerPhi: " << track->outerPhi() << " outerEta: " << track->outerEta() << std::endl;
+         std::cout << "-------ME42--------" << std::endl;
       }
       else if (nonME42) {
-
+         std::cout << "-------nonME42--------" << std::endl;
+      }
+      if (ME42 || nonME42) {
+         DetId id = track->outerDetId();
+         DetId::Detector det = id.det();
+         int subdet = id.subdetId();
+         std::cout << "DetID: ";
+         if (det==2 && subdet==1) {
+            std::cout << (DTChamberId)id << std::endl;
+         }
+         else if (det==2 && subdet==2) {
+            std::cout << (CSCDetId)id << std::endl;
+         }
+         else if (det==2 && subdet==3) {
+            std::cout << (RPCDetId)id << std::endl;
+         }
+         std::cout << "outerPhi: " << track->outerPhi() << " outerEta: " << track->outerEta() << std::endl;
       }
    }
 }
