@@ -27,10 +27,6 @@ CSCPerformance::CSCPerformance(const edm::ParameterSet& iConfig)
 
 CSCPerformance::~CSCPerformance()
 {
-   // normalize histograms
-   hists["numChambersME42"]->Scale(1.0/hists["numChambersME42"]->Integral());
-   hists["numChambersNonME42"]->Scale(1.0/hists["numChambersNonME42"]->Integral());
-
    // station hit pattern labels
    const int numLabels = 31;
    const char *hitPatternLabel[numLabels] = {"None","","ME1","","ME2","","ME3","","ME4","","ME1/ME2","","ME1/ME3","","ME1/ME4","","ME2/ME3","","ME2/ME4","","ME3/ME4","","ME1/ME2/ME3","","ME1/ME2/ME4","","ME1/ME3/ME4","","ME2/ME3/ME4","","ME1/ME2/ME3/ME4"};

@@ -32,13 +32,13 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #import FWCore.PythonUtilities.LumiList as LumiList
 #process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange()
 
-MUONCUT = "pt>20 && abs(eta)<2.4" + \
-        " && isGlobalMuon && isPFMuon" + \
-        " && globalTrack().normalizedChi2<10.0" + \
-        " && globalTrack().hitPattern().numberOfValidMuonHits > 0" + \
-        " && globalTrack().hitPattern().numberOfValidPixelHits>0" + \
-        " && numberOfMatchedStations>1" + \
-        " && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
+MUONCUT = "pt>3 && abs(eta)<2.4" + \
+        " && isGlobalMuon && isPFMuon" #+ \
+#        " && globalTrack().normalizedChi2<10.0" + \
+#        " && globalTrack().hitPattern().numberOfValidMuonHits > 0" + \
+#        " && globalTrack().hitPattern().numberOfValidPixelHits>0" + \
+#        " && numberOfMatchedStations>1" + \
+#        " && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 
 process.goodMuons = cms.EDFilter("MuonRefSelector",
         src = cms.InputTag('muons'),
