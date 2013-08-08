@@ -22,6 +22,8 @@ CSCPerformance::CSCPerformance(const edm::ParameterSet& iConfig)
    hists["numChambersNonME42"] = fileService->make<TH1F>("numChambersNonME42","Number of Matched Stations in Non-ME4/2 Region",6,-0.5,5.5);
    hists["hitPatternME42"] = fileService->make<TH1F>("hitPatternME42","Station Hit Pattern in ME4/2 Region",31,.5,31.5);
    hists["hitPatternNonME42"] = fileService->make<TH1F>("hitPatternNonME42","Station Hit Pattern in Non-ME4/2 Region",31,.5,31.5);
+   hists["ptME42"] = fileService->make<TH1F>("ptME42","p_{T} in ME4/2 Region",50,0,200);
+   hists["ptNonME42"] = fileService->make<TH1F>("ptNonME42","p_{T} in Non-ME4/2 Region",50,0,200);
 }
 
 
@@ -32,6 +34,11 @@ CSCPerformance::~CSCPerformance()
    const char *hitPatternLabel[numLabels] = {"None","","ME1","","ME2","","ME3","","ME4","","ME1/ME2","","ME1/ME3","","ME1/ME4","","ME2/ME3","","ME2/ME4","","ME3/ME4","","ME1/ME2/ME3","","ME1/ME2/ME4","","ME1/ME3/ME4","","ME2/ME3/ME4","","ME1/ME2/ME3/ME4"};
    for (int i=1;i<=numLabels;i++) hists["hitPatternME42"]->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
    for (int i=1;i<=numLabels;i++) hists["hitPatternNonME42"]->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
+
+   hists["numChambersME42"]->GetXaxis()->SetTitle("Number of stations in track");
+   hists["numChambersNonME42"]->GetXaxis()->SetTitle("Number of stations in track");
+   hists["ptME42"]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hists["ptNonME42"]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 }
 
 
@@ -163,10 +170,12 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)//, 
          if (ME42) {
             hists["numChambersME42"]->Fill(numberOfMatchedCSCStations(*muon));
             hists["hitPatternME42"]->Fill(getHitPattern(*muon));
+            hists["ptME42"]->Fill(muon->pt());
          }
          else if (nonME42) {
             hists["numChambersNonME42"]->Fill(numberOfMatchedCSCStations(*muon));
             hists["hitPatternNonME42"]->Fill(getHitPattern(*muon));
+            hists["ptNonME42"]->Fill(muon->pt());
             if (numberOfMatchedCSCStations(*muon)==4) {
                std::cout << "4 in non-ME4/2" << std::endl;
                outputDetID(*muon);
