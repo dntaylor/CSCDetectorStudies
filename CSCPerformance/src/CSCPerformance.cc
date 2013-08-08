@@ -49,7 +49,7 @@ CSCPerformance::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
 
-   // get parameters
+   // get event parameters
    Handle<CSCRecHit2DCollection> recHits;
    Handle<CSCSegmentCollection> cscSegments;
    Handle<reco::TrackCollection> saMuons;
@@ -59,8 +59,12 @@ CSCPerformance::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByLabel(saMuonTag,saMuons);
    iEvent.getByLabel(allMuonsTag,allMuons);
 
+   // get setup parameters
+//   ESHandle<CSCGeometry> theGeometry;
+//   iSetup.get<MuonGeometryRecord>().get(theGeometry);  
+
    // plot number of chambers in each muon for ME4/2 region
-   plotMatchedChambers(allMuons,saMuons); 
+   plotMatchedChambers(allMuons);//,theGeometry); 
 }
 
 
@@ -112,82 +116,97 @@ CSCPerformance::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 
 // method to plot number of muons v number of matched chambers in a given region
 void
-CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons, edm::Handle<reco::TrackCollection> tracks)
+CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)//, edm::ESHandle<CSCGeometry> geometry)
 {
    // ME+4/2 region
    // eta = [1.2,1.8], phi = [1.396,2.269]
    double etaMin = 1.2;
-   double etaMax = 1.6;
+   double etaMax = 1.7;
    double phiMin = 1.4;
    double phiMax = 2.25;
    double outPhiMin = 1.2;
-   double outPhiMax = 2.5;
+   double outPhiMax = 2.45;
 
+   // Get list of detector ids for ME42
+//   std::vector<int> ME42DetId;
+//   std::vector<GlobalPoint> ME42CenterGlobalPoint;
+//   CSCGeometry::DetUnitContainer theDetUnits = geometry->detUnits();
+//   for (CSCGeometry::DetUnitContainer::const_iterator geomUnit = theDetUnits.begin(); geomUnit != theDetUnits.end(); ++geomUnit)
+//   {
+//      CSCLayer* layer = dynamic_cast<CSCLayer*>(*geomUnit);
+//      if (layer) {
+//         DetId detId = layer->geographicalId();
+//         int id = detId();
+//         // check to see if we have a ME42
+//         if (CSCDetId::endcap(id)==2 && CSCDetId::station(id)==4 && CSCDetId::ring(id)==2 && CSCDetId::layer(id)==0) { 
+//            std::cout << "The ME42 detectors are: " << std::endl;
+//            outputDetID(detId);
+//            ME42DetId.push_back(id);
+//            LocalPoint localCenter(0.,0.,0.);
+//            ME42CenterGlobalPoint.push_back(layer->toGlobal(localCenter));
+//         }
+//      }
+//   }
+//
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon)
    {
-      bool ME42 = (muon->eta()>etaMin && muon->eta()<etaMax && muon->phi()>phiMin && muon->phi()<phiMax);
-      bool nonME42 = (TMath::Abs(muon->eta())>etaMin && TMath::Abs(muon->eta())<etaMax && (muon->phi()<outPhiMin || muon->phi()>outPhiMax));
-      // select ME4/2 region
-      if (ME42) {
-         hists["numChambersME42"]->Fill(numberOfMatchedCSCStations(*muon));
-         hists["hitPatternME42"]->Fill(getHitPattern(*muon));
+      if (muon->isGlobalMuon()) {
+         reco::TrackRef track = muon->outerTrack();
+
+         // Get track hit pattern global point
+//         GlobalPoint outerTrackHit(track->outerX(),track->outerY(),track->outerZ());
+         // Get global point for ME42
+         // convert track global point to having same x coordinate
+         // iterate over chambers and get local point for each chamber from modified global point
+         // if in any chamber, ME42=true
+         // perform cut in outerEta and outerPhi
+         // make histograms
+
+         bool ME42 = (track->outerEta()>etaMin && track->outerEta()<etaMax && track->outerPhi()>phiMin && track->outerPhi()<phiMax);
+         bool nonME42 = (TMath::Abs(track->outerEta())>etaMin && TMath::Abs(track->outerEta())<etaMax && (track->outerPhi()<outPhiMin || track->outerPhi()>outPhiMax));
+         if (ME42) {
+            hists["numChambersME42"]->Fill(numberOfMatchedCSCStations(*muon));
+            hists["hitPatternME42"]->Fill(getHitPattern(*muon));
+         }
+         else if (nonME42) {
+            hists["numChambersNonME42"]->Fill(numberOfMatchedCSCStations(*muon));
+            hists["hitPatternNonME42"]->Fill(getHitPattern(*muon));
+            if (numberOfMatchedCSCStations(*muon)==4) {
+               std::cout << "4 in non-ME4/2" << std::endl;
+               outputDetID(*muon);
+               std::cout << "outer DetId: ";
+               outputDetID(track->outerDetId());
+               std::cout << "phi: " << track->outerPhi() << " eta: " << track->outerEta() << std::endl;
+            }
+         } 
       }
-      else if (nonME42) {
-         hists["numChambersNonME42"]->Fill(numberOfMatchedCSCStations(*muon));
-         hists["hitPatternNonME42"]->Fill(getHitPattern(*muon));
-//         if (numberOfMatchedCSCStations(*muon)==4) {
-//            std::cout << "---------------" << std::endl << "4 in non-ME42" << std::endl;
-//            outputDetID(*muon);
-//            std::cout << "phi: " << muon->phi() << " eta: " << muon->eta() << std::endl;
-//         }
-      } 
    }   
-   for (reco::TrackCollection::const_iterator track = tracks->begin(); track != tracks->end(); ++track)
-   {
-      bool ME42 = (track->outerEta()>etaMin && track->outerEta()<etaMax && track->outerPhi()>phiMin && track->outerPhi()<phiMax);
-      bool nonME42 = (TMath::Abs(track->outerEta())>etaMin && TMath::Abs(track->outerEta())<etaMax && (track->outerPhi()<outPhiMin || track->outerPhi()>outPhiMax));
-      if (ME42) {
-         std::cout << "-------ME42--------" << std::endl;
-      }
-      else if (nonME42) {
-         std::cout << "-------nonME42--------" << std::endl;
-      }
-      if (ME42 || nonME42) {
-         DetId id = track->outerDetId();
-         DetId::Detector det = id.det();
-         int subdet = id.subdetId();
-         std::cout << "DetID: ";
-         if (det==2 && subdet==1) {
-            std::cout << (DTChamberId)id << std::endl;
-         }
-         else if (det==2 && subdet==2) {
-            std::cout << (CSCDetId)id << std::endl;
-         }
-         else if (det==2 && subdet==3) {
-            std::cout << (RPCDetId)id << std::endl;
-         }
-         std::cout << "outerPhi: " << track->outerPhi() << " outerEta: " << track->outerEta() << std::endl;
-      }
-   }
 }
 
-// Method to output csc detector ID for all segments in a muon track
+// Method to output muon detector ID for all segments in a muon track
 void
 CSCPerformance::outputDetID(reco::Muon muon)
 {
    for (std::vector<reco::MuonChamberMatch>::const_iterator chamber = muon.matches().begin(); chamber != muon.matches().end(); ++chamber)
    {
-        DetId::Detector det = chamber->id.det();
-        int subdet = chamber->id.subdetId();
-        if (det==2 && subdet==1) {
-           std::cout << (DTChamberId)(chamber->id) << std::endl;
-        }
-        else if (det==2 && subdet==2) {
-           std::cout << (CSCDetId)(chamber->id) << std::endl;
-        }
-        else if (det==2 && subdet==3) {
-//           std::cout << (RPCDetId)(chamber->id) << std::endl;
-        }
+        outputDetID(chamber->id);
+   }
+}
+
+// method to output the subdetector id for a given DetId
+void
+CSCPerformance::outputDetID(DetId id)
+{
+   DetId::Detector det = id.det();
+   int subdet = id.subdetId();
+   if (det==2 && subdet==1) {
+      std::cout << (DTChamberId)id << std::endl;
+   }
+   else if (det==2 && subdet==2) {
+      std::cout << (CSCDetId)id << std::endl;
+   }
+   else if (det==2 && subdet==3) {
+      std::cout << (RPCDetId)id << std::endl;
    }
 }
 

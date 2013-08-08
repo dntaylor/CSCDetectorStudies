@@ -30,6 +30,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include <FWCore/Framework/interface/ESHandle.h>
 // Data formats
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2DCollection.h"
@@ -43,6 +44,10 @@
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "DataFormats/MuonDetId/interface/DTChamberId.h"
+// Geometry
+#include <Geometry/Records/interface/MuonGeometryRecord.h>
+#include <Geometry/CSCGeometry/interface/CSCGeometry.h>
+#include <Geometry/CSCGeometry/interface/CSCLayer.h>
 // root
 #include "TFile.h"
 #include "TH1.h"
@@ -69,8 +74,9 @@ class CSCPerformance : public edm::EDAnalyzer {
       virtual void endRun(edm::Run const&, edm::EventSetup const&);
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-      virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>, edm::Handle<reco::TrackCollection>);
+      virtual void plotMatchedChambers(edm::Handle<reco::MuonCollection>i);//, edm::ESHandle<CSCGeometry>);
       virtual void outputDetID(reco::Muon);
+      virtual void outputDetID(DetId);
       virtual bool hasChamber(reco::Muon, int);
       virtual int numberOfMatchedCSCStations(reco::Muon);
       virtual int getHitPattern(reco::Muon);
