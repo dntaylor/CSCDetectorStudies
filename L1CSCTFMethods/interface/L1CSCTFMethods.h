@@ -21,14 +21,25 @@
 // system include files
 #include <memory>
 
-// user include files
+// framework include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
-
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+// dataformat include files
+
+// Geometry
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "Geometry/CSCGeometry/interface/CSCLayer.h"
+// root
+#include "TFile.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TMath.h"
 //
 // class declaration
 //
