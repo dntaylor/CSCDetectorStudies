@@ -273,5 +273,11 @@ CSCPerformance::getHitPattern(reco::Muon muon)
    return -1;
 }
 
+bool
+CSCPerformance::isME42Region(L1CSCTrack track)
+{
+   return 0;
+}
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(CSCPerformance);

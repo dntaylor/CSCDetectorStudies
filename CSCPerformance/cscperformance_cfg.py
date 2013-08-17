@@ -6,6 +6,18 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Geometry.MuonNumbering.muonNumberingInitialization_cfi")
 process.load("Geometry.MuonCommonData.muonEndcapIdealGeometryXML_cfi")
 process.load("Geometry.CSCGeometry.cscGeometry_cfi")
+# import of standard configurations
+process.load('Configuration/StandardSequences/Services_cff')
+process.load('FWCore/MessageService/MessageLogger_cfi')
+process.load('Configuration/StandardSequences/SimL1Emulator_cff')
+process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
+process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+process.load('Configuration/StandardSequences/EndOfProcess_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load('Configuration/StandardSequences/MagneticField_AutoFromDBCurrent_cff')
+process.load("JetMETCorrections.Configuration.DefaultJEC_cff")
+process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
@@ -58,4 +70,7 @@ process.TFileService = cms.Service("TFileService",
 )
 
 
-process.p = cms.Path(process.goodMuons * process.cscPerformance)
+process.p = cms.Path(
+    process.goodMuons * 
+    process.cscPerformance
+)
