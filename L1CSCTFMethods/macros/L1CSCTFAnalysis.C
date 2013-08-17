@@ -59,6 +59,7 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
 
   //number of events to process
   if (nevents==-1 || nevents>GetEntries()) nevents=GetEntries();
+  std::cout << "loaded " << nevents << " events" << std::endl;
 
   bookhistos();
 
@@ -68,6 +69,10 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
       //load the i-th event 
       Long64_t ientry = LoadTree(i); if (ientry < 0) break;
       GetEntry(i);
+
+      // status
+      if(i!=0 && (i%100)==0) { std::cout << "- processing event " << i << std::endl; } 
+
 
     } //end loop on events
 
