@@ -54,7 +54,7 @@ class L1CSCTFMethods : public edm::EDAnalyzer {
       // ----------member data ---------------------------
 };
 
-/
+//
 // constants, enums and typedefs
 //
 
