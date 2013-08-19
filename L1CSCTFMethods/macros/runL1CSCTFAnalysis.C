@@ -9,7 +9,7 @@ L1CSCTFAnalysis t;
 t.OpenWithList("CSCDetectorStudies/L1CSCTFMethods/macros/listOfFiles.txt");
 
 // run over a 1000 events
-t.run(1000);
+t.run(10000);
 
 // to run over all events
 //t.run(-1);

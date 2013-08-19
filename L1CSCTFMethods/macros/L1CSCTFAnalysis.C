@@ -75,7 +75,7 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
       GetEntry(i);
 
       // status
-      if(i!=0 && (i%100)==0) { std::cout << "- processing event " << i << std::endl; } 
+      if(i!=0 && (i%1000)==0) { std::cout << "- processing event " << i << std::endl; } 
 
       // loop over tracks
       int trackSize = csctf_->trSize;
@@ -122,6 +122,12 @@ void L1CSCTFAnalysis::bookhistos(){
 
    hChamberOccupancyME42 = new TH1F("hChamberOccupancyME42","Chamber Occupancy: ME4/2 Region",16,-.5,15.5);
    hChamberOccupancyNonME42 = new TH1F("hChamberOccupancyNonME42","Chamber Occupancy: Non-ME4/2 Region",16,-.5,15.5);
+
+   // station hit pattern labels
+   const int n = 16;
+   const char *hitPatternLabel[n] = {"None","ME1","ME2","ME3","ME4","ME1+2","ME1+3","ME1+4","ME2+3","ME2+4","ME3+4","ME1+2+3","ME1+2+4","ME1+3+4","ME2+3+4","ME1+2+3+4"};
+   for (int i=1;i<=n;i++) hChamberOccupancyME42->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
+   for (int i=1;i<=n;i++) hChamberOccupancyNonME42->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
 }
 
 bool L1CSCTFAnalysis::isME42Region(int endcap, int sector, int eta, int phi) {
