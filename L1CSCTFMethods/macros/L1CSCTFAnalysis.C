@@ -28,32 +28,32 @@ class L1CSCTFAnalysis : public L1Ntuple
 {
 public :
 
-  //constructor    
-  L1CSCTFAnalysis() {}
-  L1CSCTFAnalysis(std::string filename) : L1Ntuple(filename) {}
-  
-  //main function macro : arguments can be adpated to your need
-  void run(Long64_t nevents);
-  void bookhistos();     // to book histograms
-  bool isME42Region(int endcap, int sector, int eta, int phi);
-  void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
-  void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
-  void doTrackLCTRatePlots(int size, bool isME42);
-  void doTrackPtRatePlots(double pt, bool isME42);
-  void doTrackPhiRatePlots(double phi, int endcap);
-  void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
-  void end();
+   //constructor    
+   L1CSCTFAnalysis() {}
+   L1CSCTFAnalysis(std::string filename) : L1Ntuple(filename) {}
+   
+   //main function macro : arguments can be adpated to your need
+   void run(Long64_t nevents);
+   void bookhistos();     // to book histograms
+   bool isME42Region(int endcap, int sector, int eta, int phi);
+   void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
+   void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
+   void doTrackLCTRatePlots(int size, bool isME42);
+   void doTrackPtRatePlots(double pt, bool isME42);
+   void doTrackPhiRatePlots(double phi, int endcap);
+   void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
+   void end();
 
 private : 
   
-  TH1F* hChamberOccupancyME42;
-  TH1F* hChamberOccupancyNonME42;
-  TH1F* hTrackLCTRateME42;
-  TH1F* hTrackLCTRateNonME42;
-  TH1F* hTrackPtRateME42;
-  TH1F* hTrackPtRateNonME42;
-  TH1F* hTrackPhiRatePlusEndcap;
-  TH1F* hTrackPhiRateMinusEndcap;
+   TH1F* hChamberOccupancyME42;
+   TH1F* hChamberOccupancyNonME42;
+   TH1F* hTrackLCTRateME42;
+   TH1F* hTrackLCTRateNonME42;
+   TH1F* hTrackPtRateME42;
+   TH1F* hTrackPtRateNonME42;
+   TH1F* hTrackPhiRatePlusEndcap;
+   TH1F* hTrackPhiRateMinusEndcap;
 };
 
 
@@ -62,24 +62,24 @@ private :
 // --------------------------------------------------------------------
 void L1CSCTFAnalysis::run(Long64_t nevents)
 {
+   
+   // output file
+   TFile *theFile    =new TFile("L1CSCTFAnalysis.root", "RECREATE");
+   theFile->cd();
+ 
+   // ------------------------------------------------------------------------------
+   // variables
+   // ------------------------------------------------------------------------------
 
-  // output file
-  TFile *theFile    =new TFile("L1CSCTFAnalysis.root", "RECREATE");
-  theFile->cd();
-
-  // ------------------------------------------------------------------------------
-  // variables
-  // ------------------------------------------------------------------------------
-
-  //number of events to process
-  if (nevents==-1 || nevents>GetEntries()) nevents=GetEntries();
-  std::cout << "loaded " << nevents << " events" << std::endl;
-
-  bookhistos();
-
-  //loop over the events
-  for (Long64_t i=0; i<nevents; i++)
-    {
+   //number of events to process
+   if (nevents==-1 || nevents>GetEntries()) nevents=GetEntries();
+   std::cout << "loaded " << nevents << " events" << std::endl;
+   
+   bookhistos();
+   
+   //loop over the events
+   for (Long64_t i=0; i<nevents; i++)
+   {
       //load the i-th event 
       Long64_t ientry = LoadTree(i); if (ientry < 0) break;
       GetEntry(i);
@@ -124,12 +124,10 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
 
     } //end loop on events
 
-  //////////////////////////////// 
-  //////////////////////////////// 
-  // write histo to fil]
-  end();
-  theFile->Write();
-  theFile->Close();
+   // write histo to fill
+   end();
+   theFile->Write();
+   theFile->Close();
 }
 
 void L1CSCTFAnalysis::bookhistos(){
@@ -145,8 +143,8 @@ void L1CSCTFAnalysis::bookhistos(){
 
    hTrackLCTRateME42 = new TH1F("hTrackLCTRateME42","LCT Rate: ME4/2 Region",5,-.5,4.5);
    hTrackLCTRateNonME42 = new TH1F("hTrackLCTRateNonME42","LCT Rate: Non-ME4/2 Region",5,-.5,4.5);
-   hTrackPtRateME42 = new TH1F("hTrackPtRateME42","CSCTF p_{T} Rate: ME4/2 Region",10,-10,190);
-   hTrackPtRateNonME42 = new TH1F("hTrackPtRateNonME42","CSCTF p_{T} Rate: Non-ME4/2 Region",10,-10,190);
+   hTrackPtRateME42 = new TH1F("hTrackPtRateME42","CSCTF p_{T} Rate: ME4/2 Region",8,-10,150);
+   hTrackPtRateNonME42 = new TH1F("hTrackPtRateNonME42","CSCTF p_{T} Rate: Non-ME4/2 Region",8,-10,150);
    hTrackPhiRatePlusEndcap = new TH1F("hTrackPhiRatePlusEndcap","CSCTF #phi: Plus Endcap",6,0,2*TMath::Pi());
    hTrackPhiRateMinusEndcap = new TH1F("hTrackPhiRateMinusEndcap","CSCTF #phi: Minus Endcap",6,0,2*TMath::Pi());
 }
@@ -214,8 +212,8 @@ void L1CSCTFAnalysis::doTrackLCTRatePlots(int size, bool isME42) {
 }
 
 void L1CSCTFAnalysis::doTrackPtRatePlots(double pt, bool isME42) {
-   if (isME42) { ratePlotHelper(hTrackPtRateME42,10,0,180,pt); }
-   else { ratePlotHelper(hTrackPtRateNonME42,10,0,180,pt); }
+   if (isME42) { ratePlotHelper(hTrackPtRateME42,8,0,140,pt); }
+   else { ratePlotHelper(hTrackPtRateNonME42,8,0,140,pt); }
 }
 
 void L1CSCTFAnalysis::ratePlotHelper(TH1* hist, int nBins, double min, double max, double val) {
