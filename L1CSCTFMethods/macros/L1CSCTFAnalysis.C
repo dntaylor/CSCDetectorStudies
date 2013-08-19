@@ -35,10 +35,14 @@ public :
   //main function macro : arguments can be adpated to your need
   void run(Long64_t nevents);
   void bookhistos();     // to book histograms
+  bool isME42Region(int endcap, int sector, int eta, int phi);
+  void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
+  void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
 
 private : 
   
-  TH1F* hPtMuons;
+  TH1F* hChamberOccupancyME42;
+  TH1F* hChamberOccupancyNonME42;
   
 };
 
@@ -73,6 +77,37 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
       // status
       if(i!=0 && (i%100)==0) { std::cout << "- processing event " << i << std::endl; } 
 
+      // loop over tracks
+      int trackSize = csctf_->trSize;
+      for (int trk = 0; trk<trackSize; trk++) {
+         int lctSize = csctf_->trNumLCTs[trk];
+         // check if track crosses ME42 region
+         int eta = csctf_->trLctglobalEta[trk][lctSize-1];   // goes from 0-125 within endcap
+         int phi = csctf_->trLctglobalPhi[trk][lctSize-1];   // goes from ~50-4050 within sector
+         int endcap = csctf_->trLctEndcap[trk][lctSize-1];   // 1 or -1
+         int sector = csctf_->trLctSector[trk][lctSize-1];   // 1-6 in + 7-12 in - (starts at 15 deg)
+         int subsector = csctf_->trLctSubSector[trk][lctSize-1]; // ?? most 0 (some 1 or 2)
+         int station = csctf_->trLctStation[trk][lctSize-1]; // 1-4
+         int ring = csctf_->trLctRing[trk][lctSize-1];       // 1-3 in station 1, 1-2 in 2-4
+         int chamber = csctf_->trLctChamber[trk][lctSize-1]; // 1-18 or 1-36 (dependent on geom)
+         int strip = csctf_->trLctstripNum[trk][lctSize-1];  //
+         int wire = csctf_->trLctwireGroup[trk][lctSize-1];  //
+         int CSCID = csctf_->trLctTriggerCSCID[trk][lctSize-1]; //
+         bool isME42 = isME42Region(endcap,sector,eta,phi);
+         if (eta<23 || eta>72) { break; } // break out if track is outside ME4/2 eta region
+         if (station == 3 && ring == 2) {
+         //outputLCTProperties(endcap,sector,subsector,station,ring,chamber,CSCID,eta,phi,strip,wire);
+         }
+
+
+         // track chamber occupancy
+         int ME1 = csctf_->trME1ID[trk];
+         int ME2 = csctf_->trME2ID[trk];
+         int ME3 = csctf_->trME3ID[trk];
+         int ME4 = csctf_->trME4ID[trk];
+         //std::cout << " " << ME1 << " " << ME2 << " " << ME3 << " " << ME4 << " " << isME42 << std::endl;
+         doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
+      }
 
     } //end loop on events
 
@@ -85,5 +120,51 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
 
 void L1CSCTFAnalysis::bookhistos(){
 
-  hPtMuons = new TH1F("hPtMuons", "p_{T}(#mu)", 200,  0., 200.);
+   hChamberOccupancyME42 = new TH1F("hChamberOccupancyME42","Chamber Occupancy: ME4/2 Region",16,-.5,15.5);
+   hChamberOccupancyNonME42 = new TH1F("hChamberOccupancyNonME42","Chamber Occupancy: Non-ME4/2 Region",16,-.5,15.5);
+}
+
+bool L1CSCTFAnalysis::isME42Region(int endcap, int sector, int eta, int phi) {
+   // ME 42 chambers 9-13 in CSCTF coordinates
+   // eta: 23-72
+   // phi: 49-3387 in sector 2 of endcap 1
+   // method currently just looks at outermost LCT eta and phi
+   // (should really look at the local eta and phi value in the 4th station
+   // even if there is no LCT in the 4th station)
+   return (eta>=23 && eta<=72 && endcap==1 && sector==2 && phi>=49 && phi<=3387);
+}
+
+void L1CSCTFAnalysis::doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42) {
+   // pattern:
+   // 0 stations: 0
+   // 1 stations: 1 = 1, 2 = 2, 3 = 3, 4 = 4
+   // 2 stations: 12 = 5, 13 = 6, 14 = 7, 23 = 8, 24 = 9, 34 = 10
+   // 3 stations: 123 = 11, 124 = 12, 134 = 13, 234 = 14
+   // 4 stations: 1234 = 15
+   int val = 0;
+   if (!ME1 && !ME2 && !ME3 && !ME4) { val = 0; }
+   if (ME1 && !ME2 && !ME3 && !ME4) { val = 1; }
+   if (!ME1 && ME2 && !ME3 && !ME4) { val = 2; }
+   if (!ME1 && !ME2 && ME3 && !ME4) { val = 3; }
+   if (!ME1 && !ME2 && !ME3 && ME4) { val = 4; }
+   if (ME1 && ME2 && !ME3 && !ME4) { val = 5; }
+   if (ME1 && !ME2 && ME3 && !ME4) { val = 6; }
+   if (ME1 && !ME2 && !ME3 && ME4) { val = 7; }
+   if (!ME1 && ME2 && ME3 && !ME4) { val = 8; }
+   if (!ME1 && ME2 && !ME3 && ME4) { val = 9; }
+   if (!ME1 && !ME2 && ME3 && ME4) { val = 10; }
+   if (ME1 && ME2 && ME3 && !ME4) { val = 11; }
+   if (ME1 && ME2 && !ME3 && ME4) { val = 12; }
+   if (ME1 && !ME2 && ME3 && ME4) { val = 13; }
+   if (!ME1 && ME2 && ME3 && ME4) { val = 14; }
+   if (ME1 && ME2 && ME3 && ME4) { val = 15; }
+   if (isME42) { hChamberOccupancyME42->Fill(val); }
+   if (!isME42) { hChamberOccupancyNonME42->Fill(val); }
+}
+
+void L1CSCTFAnalysis::outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire) {
+   std::cout << "CSC LCT Properties:" << std::endl;
+   std::cout << " E: " << endcap << " S: " << station << " R: " << ring << " C: " << chamber << std::endl;
+   std::cout << " st: " << strip << " w: " << wire << std::endl;
+   std::cout << " eta: " << eta << " phi: " << phi << std::endl;
 }
