@@ -15,7 +15,7 @@ MUONCUT = "pt>20 && abs(eta)<2.4"
 ME42CUT = " && 1.396<phi<2.269"
 NOME42CUT = " && (phi<1.396 || phi>2.269)"
 TAGMUONCOLLECTION = "muons"
-PROBEMUONCOLLECTION = "allMuons" # includes muons,calomuons
+PROBEMUONCOLLECTION = "generalTracks" 
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -114,7 +114,7 @@ process.tagMuons = cms.EDFilter("MuonRefSelector",
 	filter = cms.bool(True),
 )
 
-process.probeMuons = cms.EDFilter("MuonRefSelector",
+process.probeMuons = cms.EDFilter("RefSelector",
 	src = cms.InputTag(PROBEMUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )

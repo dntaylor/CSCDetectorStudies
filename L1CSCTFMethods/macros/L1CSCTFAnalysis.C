@@ -38,12 +38,22 @@ public :
   bool isME42Region(int endcap, int sector, int eta, int phi);
   void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
   void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
+  void doTrackLCTRatePlots(int size, bool isME42);
+  void doTrackPtRatePlots(double pt, bool isME42);
+  void doTrackPhiRatePlots(double phi, int endcap);
+  void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
+  void end();
 
 private : 
   
   TH1F* hChamberOccupancyME42;
   TH1F* hChamberOccupancyNonME42;
-  
+  TH1F* hTrackLCTRateME42;
+  TH1F* hTrackLCTRateNonME42;
+  TH1F* hTrackPtRateME42;
+  TH1F* hTrackPtRateNonME42;
+  TH1F* hTrackPhiRatePlusEndcap;
+  TH1F* hTrackPhiRateMinusEndcap;
 };
 
 
@@ -86,18 +96,18 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
          int phi = csctf_->trLctglobalPhi[trk][lctSize-1];   // goes from ~50-4050 within sector
          int endcap = csctf_->trLctEndcap[trk][lctSize-1];   // 1 or -1
          int sector = csctf_->trLctSector[trk][lctSize-1];   // 1-6 in + 7-12 in - (starts at 15 deg)
-         int subsector = csctf_->trLctSubSector[trk][lctSize-1]; // ?? most 0 (some 1 or 2)
-         int station = csctf_->trLctStation[trk][lctSize-1]; // 1-4
-         int ring = csctf_->trLctRing[trk][lctSize-1];       // 1-3 in station 1, 1-2 in 2-4
-         int chamber = csctf_->trLctChamber[trk][lctSize-1]; // 1-18 or 1-36 (dependent on geom)
-         int strip = csctf_->trLctstripNum[trk][lctSize-1];  //
-         int wire = csctf_->trLctwireGroup[trk][lctSize-1];  //
-         int CSCID = csctf_->trLctTriggerCSCID[trk][lctSize-1]; //
+         //int subsector = csctf_->trLctSubSector[trk][lctSize-1]; // ?? most 0 (some 1 or 2)
+         //int station = csctf_->trLctStation[trk][lctSize-1]; // 1-4
+         //int ring = csctf_->trLctRing[trk][lctSize-1];       // 1-3 in station 1, 1-2 in 2-4
+         //int chamber = csctf_->trLctChamber[trk][lctSize-1]; // 1-18 or 1-36 (dependent on geom)
+         //int strip = csctf_->trLctstripNum[trk][lctSize-1];  //
+         //int wire = csctf_->trLctwireGroup[trk][lctSize-1];  //
+         //int CSCID = csctf_->trLctTriggerCSCID[trk][lctSize-1]; //
          bool isME42 = isME42Region(endcap,sector,eta,phi);
          if (eta<23 || eta>72) { break; } // break out if track is outside ME4/2 eta region
-         if (station == 3 && ring == 2) {
-         //outputLCTProperties(endcap,sector,subsector,station,ring,chamber,CSCID,eta,phi,strip,wire);
-         }
+         //if (station == 3 && ring == 2) {
+         //   outputLCTProperties(endcap,sector,subsector,station,ring,chamber,CSCID,eta,phi,strip,wire);
+         //}
 
 
          // track chamber occupancy
@@ -107,6 +117,9 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
          int ME4 = csctf_->trME4ID[trk];
          //std::cout << " " << ME1 << " " << ME2 << " " << ME3 << " " << ME4 << " " << isME42 << std::endl;
          doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
+         doTrackLCTRatePlots(lctSize,isME42);
+         doTrackPtRatePlots(csctf_->trPt[trk],isME42);
+         doTrackPhiRatePlots(csctf_->trPhi_02PI[trk],csctf_->trEndcap[trk]);
       }
 
     } //end loop on events
@@ -114,6 +127,7 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
   //////////////////////////////// 
   //////////////////////////////// 
   // write histo to fil]
+  end();
   theFile->Write();
   theFile->Close();
 }
@@ -128,6 +142,23 @@ void L1CSCTFAnalysis::bookhistos(){
    const char *hitPatternLabel[n] = {"None","ME1","ME2","ME3","ME4","ME1+2","ME1+3","ME1+4","ME2+3","ME2+4","ME3+4","ME1+2+3","ME1+2+4","ME1+3+4","ME2+3+4","ME1+2+3+4"};
    for (int i=1;i<=n;i++) hChamberOccupancyME42->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
    for (int i=1;i<=n;i++) hChamberOccupancyNonME42->GetXaxis()->SetBinLabel(i,hitPatternLabel[i-1]);
+
+   hTrackLCTRateME42 = new TH1F("hTrackLCTRateME42","LCT Rate: ME4/2 Region",5,-.5,4.5);
+   hTrackLCTRateNonME42 = new TH1F("hTrackLCTRateNonME42","LCT Rate: Non-ME4/2 Region",5,-.5,4.5);
+   hTrackPtRateME42 = new TH1F("hTrackPtRateME42","CSCTF p_{T} Rate: ME4/2 Region",10,-10,190);
+   hTrackPtRateNonME42 = new TH1F("hTrackPtRateNonME42","CSCTF p_{T} Rate: Non-ME4/2 Region",10,-10,190);
+   hTrackPhiRatePlusEndcap = new TH1F("hTrackPhiRatePlusEndcap","CSCTF #phi: Plus Endcap",6,0,2*TMath::Pi());
+   hTrackPhiRateMinusEndcap = new TH1F("hTrackPhiRateMinusEndcap","CSCTF #phi: Minus Endcap",6,0,2*TMath::Pi());
+}
+
+void L1CSCTFAnalysis::end() {
+   // things to do after run
+   
+   // normalize rate plots to first bin
+   hTrackLCTRateME42->Scale(1./hTrackLCTRateME42->GetBinContent(1));
+   hTrackLCTRateNonME42->Scale(1./hTrackLCTRateNonME42->GetBinContent(1));
+   hTrackPtRateME42->Scale(1./hTrackPtRateME42->GetBinContent(1));
+   hTrackPtRateNonME42->Scale(1./hTrackPtRateNonME42->GetBinContent(1));
 }
 
 bool L1CSCTFAnalysis::isME42Region(int endcap, int sector, int eta, int phi) {
@@ -171,6 +202,30 @@ void L1CSCTFAnalysis::doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, boo
 void L1CSCTFAnalysis::outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire) {
    std::cout << "CSC LCT Properties:" << std::endl;
    std::cout << " E: " << endcap << " S: " << station << " R: " << ring << " C: " << chamber << std::endl;
+   std::cout << " sector: " << sector << " subsector: " << subsector << std::endl;
+   std::cout << " CSCID: " << CSCID << std::endl;
    std::cout << " st: " << strip << " w: " << wire << std::endl;
    std::cout << " eta: " << eta << " phi: " << phi << std::endl;
+}
+
+void L1CSCTFAnalysis::doTrackLCTRatePlots(int size, bool isME42) {
+   if (isME42) { ratePlotHelper(hTrackLCTRateME42,5,0,4,size); }
+   else { ratePlotHelper(hTrackLCTRateNonME42,5,0,4,size); }
+}
+
+void L1CSCTFAnalysis::doTrackPtRatePlots(double pt, bool isME42) {
+   if (isME42) { ratePlotHelper(hTrackPtRateME42,10,0,180,pt); }
+   else { ratePlotHelper(hTrackPtRateNonME42,10,0,180,pt); }
+}
+
+void L1CSCTFAnalysis::ratePlotHelper(TH1* hist, int nBins, double min, double max, double val) {
+   double binWidth = (max-min)/(nBins-1);
+   for (int n=0; n<nBins; n++) {
+      if (val>=(min+n*binWidth)) { hist->Fill(min+n*binWidth); }
+   }
+}
+
+void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap) {
+   if (endcap==1) { hTrackPhiRatePlusEndcap->Fill(phi); }
+   else { hTrackPhiRateMinusEndcap->Fill(phi); }
 }
