@@ -39,8 +39,8 @@ public :
    void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
    void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
    void doTrackLCTRatePlots(int size, bool isME42);
-   void doTrackPtRatePlots(double pt, bool isME42);
    void doTrackPhiRatePlots(double phi, int endcap);
+   void doTrackPtPlots(double pt, bool isME42);
    void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
    void end();
 
@@ -54,6 +54,8 @@ private :
    TH1F* hTrackPtRateNonME42;
    TH1F* hTrackPhiRatePlusEndcap;
    TH1F* hTrackPhiRateMinusEndcap;
+   TH1F* hTrackPtME42;
+   TH1F* hTrackPtNonME42;
 };
 
 
@@ -118,7 +120,7 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
          //std::cout << " " << ME1 << " " << ME2 << " " << ME3 << " " << ME4 << " " << isME42 << std::endl;
          doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
          doTrackLCTRatePlots(lctSize,isME42);
-         doTrackPtRatePlots(csctf_->trPt[trk],isME42);
+         doTrackPtPlots(csctf_->trPt[trk],isME42);
          doTrackPhiRatePlots(csctf_->trPhi_02PI[trk],csctf_->trEndcap[trk]);
       }
 
@@ -145,8 +147,34 @@ void L1CSCTFAnalysis::bookhistos(){
    hTrackLCTRateNonME42 = new TH1F("hTrackLCTRateNonME42","LCT Rate: Non-ME4/2 Region",5,-.5,4.5);
    hTrackPtRateME42 = new TH1F("hTrackPtRateME42","CSCTF p_{T} Rate: ME4/2 Region",8,-10,150);
    hTrackPtRateNonME42 = new TH1F("hTrackPtRateNonME42","CSCTF p_{T} Rate: Non-ME4/2 Region",8,-10,150);
+   hTrackPtME42 = new TH1F("hTrackPtME42","CSCTF p_{T}: ME4/2 Region",15,0,150);
+   hTrackPtNonME42 = new TH1F("hTrackPtNonME42","CSCTF p_{T}: Non-ME4/2 Region",15,0,150);
    hTrackPhiRatePlusEndcap = new TH1F("hTrackPhiRatePlusEndcap","CSCTF #phi: Plus Endcap",6,0,2*TMath::Pi());
    hTrackPhiRateMinusEndcap = new TH1F("hTrackPhiRateMinusEndcap","CSCTF #phi: Minus Endcap",6,0,2*TMath::Pi());
+
+   hTrackLCTRateME42->GetXaxis()->SetTitle("Matched Stations");
+   hTrackLCTRateME42->GetYaxis()->SetTitle("Rate");
+   hTrackLCTRateME42->SetMinimum(0);
+   hTrackLCTRateNonME42->GetXaxis()->SetTitle("Matched Stations");
+   hTrackLCTRateNonME42->GetYaxis()->SetTitle("Rate");
+   hTrackLCTRateNonME42->SetMinimum(0);
+
+   hTrackPtRateME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtRateME42->GetYaxis()->SetTitle("Rate");
+   hTrackPtRateNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtRateNonME42->GetYaxis()->SetTitle("Rate");
+
+   hTrackPtME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtME42->GetYaxis()->SetTitle("Events");
+   hTrackPtNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtNonME42->GetYaxis()->SetTitle("Events");
+
+   hTrackPhiRatePlusEndcap->GetXaxis()->SetTitle("#phi (rad)");
+   hTrackPhiRatePlusEndcap->GetYaxis()->SetTitle("Events");
+   hTrackPhiRatePlusEndcap->SetMinimum(0);
+   hTrackPhiRateMinusEndcap->GetXaxis()->SetTitle("#phi (rad)");
+   hTrackPhiRateMinusEndcap->GetYaxis()->SetTitle("Events");
+   hTrackPhiRateMinusEndcap->SetMinimum(0);
 }
 
 void L1CSCTFAnalysis::end() {
@@ -211,9 +239,15 @@ void L1CSCTFAnalysis::doTrackLCTRatePlots(int size, bool isME42) {
    else { ratePlotHelper(hTrackLCTRateNonME42,5,0,4,size); }
 }
 
-void L1CSCTFAnalysis::doTrackPtRatePlots(double pt, bool isME42) {
-   if (isME42) { ratePlotHelper(hTrackPtRateME42,8,0,140,pt); }
-   else { ratePlotHelper(hTrackPtRateNonME42,8,0,140,pt); }
+void L1CSCTFAnalysis::doTrackPtPlots(double pt, bool isME42) {
+   if (isME42) { 
+      hTrackPtME42->Fill(pt);
+      ratePlotHelper(hTrackPtRateME42,8,0,140,pt); 
+   }
+   else { 
+      hTrackPtNonME42->Fill(pt);
+      ratePlotHelper(hTrackPtRateNonME42,8,0,140,pt); 
+   }
 }
 
 void L1CSCTFAnalysis::ratePlotHelper(TH1* hist, int nBins, double min, double max, double val) {
