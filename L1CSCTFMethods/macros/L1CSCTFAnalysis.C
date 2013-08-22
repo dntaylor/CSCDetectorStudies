@@ -42,7 +42,7 @@ public :
    void doTrackPhiRatePlots(double phi, int endcap, int lctSize);
    void doTrackPtPlots(double pt, bool isME42, int lctSize);
    void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
-   void do2Lct3LctEfficiency(double eta, double phi, int lctSize, int ME4, bool isME42);
+   void do2Lct3LctEfficiency(double eta, double phi, double pt, int lctSize, int ME4, bool isME42);
    void end();
 
 private : 
@@ -63,6 +63,16 @@ private :
    TH1F* hTrackPhiRatePlusEndcap_3of4;
    TH1F* hTrackPhiRateMinusEndcap_3of4;
    TH1F* hTrackPtME42_3of4;
+
+   TH1F* h2Lct3LctEtaDenominator;
+   TH1F* h2Lct3LctPhiDenominator;
+   TH1F* h2Lct3LctPtDenominator;
+   TH1F* h2Lct3LctEtaNumerator;
+   TH1F* h2Lct3LctPhiNumerator;
+   TH1F* h2Lct3LctPtNumerator;
+   TH1F* h2Lct3LctEtaEfficiency;
+   TH1F* h2Lct3LctPhiEfficiency;
+   TH1F* h2Lct3LctPtEfficiency;
 };
 
 
@@ -99,36 +109,37 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
       // loop over tracks
       int trackSize = csctf_->trSize;
       for (int trk = 0; trk<trackSize; trk++) {
+         double trackEta = csctf_->trEta[trk];
+         double trackPhi = csctf_->trPhi_02PI[trk];
+         double trackPt = csctf_->trPt[trk];
+         int trackEndcap = csctf_->trEndcap[trk];
+
          int lctSize = csctf_->trNumLCTs[trk];
          // check if track crosses ME42 region
-         int eta = csctf_->trLctglobalEta[trk][lctSize-1];   // goes from 0-125 within endcap
-         int phi = csctf_->trLctglobalPhi[trk][lctSize-1];   // goes from ~50-4050 within sector
-         int endcap = csctf_->trLctEndcap[trk][lctSize-1];   // 1 or -1
-         int sector = csctf_->trLctSector[trk][lctSize-1];   // 1-6 in + 7-12 in - (starts at 15 deg)
-         //int subsector = csctf_->trLctSubSector[trk][lctSize-1]; // ?? most 0 (some 1 or 2)
-         //int station = csctf_->trLctStation[trk][lctSize-1]; // 1-4
-         //int ring = csctf_->trLctRing[trk][lctSize-1];       // 1-3 in station 1, 1-2 in 2-4
-         //int chamber = csctf_->trLctChamber[trk][lctSize-1]; // 1-18 or 1-36 (dependent on geom)
-         //int strip = csctf_->trLctstripNum[trk][lctSize-1];  //
-         //int wire = csctf_->trLctwireGroup[trk][lctSize-1];  //
-         //int CSCID = csctf_->trLctTriggerCSCID[trk][lctSize-1]; //
-         bool isME42 = isME42Region(endcap,sector,eta,phi);
-         if (eta<23 || eta>72) { break; } // break out if track is outside ME4/2 eta region
-         //if (station == 3 && ring == 2) {
-         //   outputLCTProperties(endcap,sector,subsector,station,ring,chamber,CSCID,eta,phi,strip,wire);
-         //}
-
-
-         // track chamber occupancy
-         int ME1 = csctf_->trME1ID[trk];
-         int ME2 = csctf_->trME2ID[trk];
-         int ME3 = csctf_->trME3ID[trk];
-         int ME4 = csctf_->trME4ID[trk];
-         //std::cout << " " << ME1 << " " << ME2 << " " << ME3 << " " << ME4 << " " << isME42 << std::endl;
-         doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
-         doTrackLCTRatePlots(lctSize,isME42,lctSize);
-         doTrackPtPlots(csctf_->trPt[trk],isME42,lctSize);
-         doTrackPhiRatePlots(csctf_->trPhi_02PI[trk],csctf_->trEndcap[trk],lctSize);
+         int outerLctEta = csctf_->trLctglobalEta[trk][lctSize-1];   // goes from 0-125 within endcap
+         int outerLctPhi = csctf_->trLctglobalPhi[trk][lctSize-1];   // goes from ~50-4050 in sector
+         int outerLctEndcap = csctf_->trLctEndcap[trk][lctSize-1];   // 1 or -1
+         int outerLctSector = csctf_->trLctSector[trk][lctSize-1];   // 1-6 in + 7-12 in - (starts at 15 deg)
+         //int outerLctSubsector = csctf_->trLctSubSector[trk][lctSize-1]; // ?? most 0 (some 1 or 2)
+         //int outerLctStation = csctf_->trLctStation[trk][lctSize-1]; // 1-4
+         //int outerLctRing = csctf_->trLctRing[trk][lctSize-1];       // 1-3 in station 1, 1-2 in 2-4
+         //int outerLctChamber = csctf_->trLctChamber[trk][lctSize-1]; // 1-18 or 1-36 (dependent on geom)
+         //int outerLctStrip = csctf_->trLctstripNum[trk][lctSize-1];  //
+         //int outerLctWire = csctf_->trLctwireGroup[trk][lctSize-1];  //
+         //int outerLctCSCID = csctf_->trLctTriggerCSCID[trk][lctSize-1]; //
+         bool isME42 = isME42Region(outerLctEndcap,outerLctSector,outerLctEta,outerLctPhi);
+         if (outerLctEta>=23 && outerLctEta<=72) {   // ME42 eta region in CSCTF coordinates
+            // track chamber occupancy
+            int ME1 = csctf_->trME1ID[trk];
+            int ME2 = csctf_->trME2ID[trk];
+            int ME3 = csctf_->trME3ID[trk];
+            int ME4 = csctf_->trME4ID[trk];
+            doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
+            doTrackLCTRatePlots(lctSize,isME42,lctSize);
+            doTrackPtPlots(trackPt,isME42,lctSize);
+            doTrackPhiRatePlots(trackPhi,trackEndcap,lctSize);
+            do2Lct3LctEfficiency(trackEta,trackPhi,trackPt,lctSize,ME4,isME42);
+         }
       }
 
     } //end loop on events
@@ -170,6 +181,8 @@ void L1CSCTFAnalysis::bookhistos(){
    h2Lct3LctEtaDenominator = new TH1F("h2Lct3LctEtaDenominator","",10,-2.5,2.5);
    h2Lct3LctPhiNumerator = new TH1F("h2Lct3LctPhiNumerator","",6,0,2*TMath::Pi());
    h2Lct3LctPhiDenominator = new TH1F("h2Lct3LctPhiDenominator","",6,0,2*TMath::Pi());
+   h2Lct3LctPtNumerator = new TH1F("h2Lct3LctPtNumerator","",15,0,150);
+   h2Lct3LctPtDenominator = new TH1F("h2Lct3LctPtDenominator","",15,0,150);
 
    hTrackLCTRateME42->GetXaxis()->SetTitle("Matched Stations");
    hTrackLCTRateME42->GetYaxis()->SetTitle("Tracks");
@@ -211,7 +224,6 @@ void L1CSCTFAnalysis::bookhistos(){
    hTrackPhiRateMinusEndcap_3of4->GetYaxis()->SetTitle("Tracks");
    hTrackPhiRateMinusEndcap_3of4->SetMinimum(0);
 }
-}
 
 void L1CSCTFAnalysis::end() {
    // things to do after run
@@ -221,6 +233,14 @@ void L1CSCTFAnalysis::end() {
    //hTrackLCTRateNonME42->Scale(1./hTrackLCTRateNonME42->GetBinContent(1));
    //hTrackPtRateME42->Scale(1./hTrackPtRateME42->GetBinContent(1));
    //hTrackPtRateNonME42->Scale(1./hTrackPtRateNonME42->GetBinContent(1));
+
+   // make efficiencies
+   h2Lct3LctEtaEfficiency = (TH1F*)h2Lct3LctEtaNumerator->Clone("h2Lct3LctEtaEfficiency");
+   h2Lct3LctPhiEfficiency = (TH1F*)h2Lct3LctPhiNumerator->Clone("h2Lct3LctPhiEfficiency");
+   h2Lct3LctPtEfficiency = (TH1F*)h2Lct3LctPtNumerator->Clone("h2Lct3LctPtEfficiency");
+   h2Lct3LctEtaEfficiency->Divide(h2Lct3LctEtaDenominator);
+   h2Lct3LctPhiEfficiency->Divide(h2Lct3LctPhiDenominator);
+   h2Lct3LctPtEfficiency->Divide(h2Lct3LctPtDenominator);
 }
 
 bool L1CSCTFAnalysis::isME42Region(int endcap, int sector, int eta, int phi) {
@@ -307,15 +327,17 @@ void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap, int lctSize) {
    else if (lctSize>=3) { hTrackPhiRateMinusEndcap_3of4->Fill(phi); }
 }
 
-void L1CSCTFAnalysis::do2Lct3LctEfficiency(double eta, double phi, int lctSize, int ME4, bool isME42) {
+void L1CSCTFAnalysis::do2Lct3LctEfficiency(double eta, double phi, double pt, int lctSize, int ME4, bool isME42) {
    int oldLctSize = lctSize;
    if (ME4) { oldLctSize--; }
    if (isME42 && oldLctSize >= 2) { 
       h2Lct3LctPhiDenominator->Fill(phi);
       h2Lct3LctEtaDenominator->Fill(eta);
-      if (oldLctSize >= 3) {
+      h2Lct3LctPtDenominator->Fill(pt);
+      if (lctSize >= 3) {
          h2Lct3LctPhiNumerator->Fill(phi);
          h2Lct3LctEtaNumerator->Fill(eta);
+         h2Lct3LctPtNumerator->Fill(pt);
       }      
    }
 }
