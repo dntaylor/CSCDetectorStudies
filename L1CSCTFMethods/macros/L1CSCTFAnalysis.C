@@ -42,6 +42,7 @@ public :
    void doTrackPhiRatePlots(double phi, int endcap, int lctSize);
    void doTrackPtPlots(double pt, bool isME42, int lctSize);
    void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
+   void do2Lct3LctEfficiency(double eta, double phi, int lctSize, int ME4, bool isME42);
    void end();
 
 private : 
@@ -165,20 +166,35 @@ void L1CSCTFAnalysis::bookhistos(){
    hTrackPhiRatePlusEndcap_3of4 = new TH1F("hTrackPhiRatePlusEndcap_3of4","CSCTF #phi: Plus Endcap (3 of 4 LCTs)",6,0,2*TMath::Pi());
    hTrackPhiRateMinusEndcap_3of4 = new TH1F("hTrackPhiRateMinusEndcap_3of4","CSCTF #phi: Minus Endcap (3 of 4 LCTs)",6,0,2*TMath::Pi());
 
+   h2Lct3LctEtaNumerator = new TH1F("h2Lct3LctEtaNumerator","",10,-2.5,2.5);
+   h2Lct3LctEtaDenominator = new TH1F("h2Lct3LctEtaDenominator","",10,-2.5,2.5);
+   h2Lct3LctPhiNumerator = new TH1F("h2Lct3LctPhiNumerator","",6,0,2*TMath::Pi());
+   h2Lct3LctPhiDenominator = new TH1F("h2Lct3LctPhiDenominator","",6,0,2*TMath::Pi());
+
    hTrackLCTRateME42->GetXaxis()->SetTitle("Matched Stations");
    hTrackLCTRateME42->GetYaxis()->SetTitle("Tracks");
    hTrackLCTRateME42->SetMinimum(0);
+   hTrackLCTRateME42_3of4->GetXaxis()->SetTitle("Matched Stations");
+   hTrackLCTRateME42_3of4->GetYaxis()->SetTitle("Tracks");
+   hTrackLCTRateME42_3of4->SetMinimum(0);
+   hTrackLCTRateNonME42->GetXaxis()->SetTitle("Matched Stations");
    hTrackLCTRateNonME42->GetXaxis()->SetTitle("Matched Stations");
    hTrackLCTRateNonME42->GetYaxis()->SetTitle("Tracks");
    hTrackLCTRateNonME42->SetMinimum(0);
 
    hTrackPtRateME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtRateME42->GetYaxis()->SetTitle("Tracks");
+   hTrackPtRateME42_3of4->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtRateME42_3of4->GetYaxis()->SetTitle("Tracks");
+   hTrackPtRateNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtRateNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtRateNonME42->GetYaxis()->SetTitle("Tracks");
 
    hTrackPtME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtME42->GetYaxis()->SetTitle("Tracks");
+   hTrackPtME42_3of4->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+   hTrackPtME42_3of4->GetYaxis()->SetTitle("Tracks");
+   hTrackPtNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
    hTrackPtNonME42->GetYaxis()->SetTitle("Tracks");
 
@@ -188,6 +204,13 @@ void L1CSCTFAnalysis::bookhistos(){
    hTrackPhiRateMinusEndcap->GetXaxis()->SetTitle("#phi (rad)");
    hTrackPhiRateMinusEndcap->GetYaxis()->SetTitle("Tracks");
    hTrackPhiRateMinusEndcap->SetMinimum(0);
+   hTrackPhiRatePlusEndcap_3of4->GetXaxis()->SetTitle("#phi (rad)");
+   hTrackPhiRatePlusEndcap_3of4->GetYaxis()->SetTitle("Tracks");
+   hTrackPhiRatePlusEndcap_3of4->SetMinimum(0);
+   hTrackPhiRateMinusEndcap_3of4->GetXaxis()->SetTitle("#phi (rad)");
+   hTrackPhiRateMinusEndcap_3of4->GetYaxis()->SetTitle("Tracks");
+   hTrackPhiRateMinusEndcap_3of4->SetMinimum(0);
+}
 }
 
 void L1CSCTFAnalysis::end() {
@@ -282,4 +305,17 @@ void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap, int lctSize) {
    else { hTrackPhiRateMinusEndcap->Fill(phi); }
    if (endcap==1 && lctSize>=3) { hTrackPhiRatePlusEndcap_3of4->Fill(phi); }
    else if (lctSize>=3) { hTrackPhiRateMinusEndcap_3of4->Fill(phi); }
+}
+
+void L1CSCTFAnalysis::do2Lct3LctEfficiency(double eta, double phi, int lctSize, int ME4, bool isME42) {
+   int oldLctSize = lctSize;
+   if (ME4) { oldLctSize--; }
+   if (isME42 && oldLctSize >= 2) { 
+      h2Lct3LctPhiDenominator->Fill(phi);
+      h2Lct3LctEtaDenominator->Fill(eta);
+      if (oldLctSize >= 3) {
+         h2Lct3LctPhiNumerator->Fill(phi);
+         h2Lct3LctEtaNumerator->Fill(eta);
+      }      
+   }
 }
