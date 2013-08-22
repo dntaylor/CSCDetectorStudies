@@ -38,9 +38,9 @@ public :
    bool isME42Region(int endcap, int sector, int eta, int phi);
    void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
    void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
-   void doTrackLCTRatePlots(int size, bool isME42);
-   void doTrackPhiRatePlots(double phi, int endcap);
-   void doTrackPtPlots(double pt, bool isME42);
+   void doTrackLCTRatePlots(int size, bool isME42, int lctSize);
+   void doTrackPhiRatePlots(double phi, int endcap, int lctSize);
+   void doTrackPtPlots(double pt, bool isME42, int lctSize);
    void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
    void end();
 
@@ -56,6 +56,12 @@ private :
    TH1F* hTrackPhiRateMinusEndcap;
    TH1F* hTrackPtME42;
    TH1F* hTrackPtNonME42;
+
+   TH1F* hTrackLCTRateME42_3of4;
+   TH1F* hTrackPtRateME42_3of4;
+   TH1F* hTrackPhiRatePlusEndcap_3of4;
+   TH1F* hTrackPhiRateMinusEndcap_3of4;
+   TH1F* hTrackPtME42_3of4;
 };
 
 
@@ -119,9 +125,9 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
          int ME4 = csctf_->trME4ID[trk];
          //std::cout << " " << ME1 << " " << ME2 << " " << ME3 << " " << ME4 << " " << isME42 << std::endl;
          doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
-         doTrackLCTRatePlots(lctSize,isME42);
-         doTrackPtPlots(csctf_->trPt[trk],isME42);
-         doTrackPhiRatePlots(csctf_->trPhi_02PI[trk],csctf_->trEndcap[trk]);
+         doTrackLCTRatePlots(lctSize,isME42,lctSize);
+         doTrackPtPlots(csctf_->trPt[trk],isME42,lctSize);
+         doTrackPhiRatePlots(csctf_->trPhi_02PI[trk],csctf_->trEndcap[trk],lctSize);
       }
 
     } //end loop on events
@@ -152,28 +158,35 @@ void L1CSCTFAnalysis::bookhistos(){
    hTrackPhiRatePlusEndcap = new TH1F("hTrackPhiRatePlusEndcap","CSCTF #phi: Plus Endcap",6,0,2*TMath::Pi());
    hTrackPhiRateMinusEndcap = new TH1F("hTrackPhiRateMinusEndcap","CSCTF #phi: Minus Endcap",6,0,2*TMath::Pi());
 
+
+   hTrackLCTRateME42_3of4 = new TH1F("hTrackLCTRateME42_3of4","LCT Rate: ME4/2 Region (3 of 4 LCTs)",5,-.5,4.5);
+   hTrackPtRateME42_3of4 = new TH1F("hTrackPtRateME42_3of4","CSCTF p_{T} Rate: ME4/2 Region (3 of 4 LCTs)",8,-10,150);
+   hTrackPtME42_3of4 = new TH1F("hTrackPtME42_3of4","CSCTF p_{T}: ME4/2 Region (3 of 4 LCTs)",15,0,150);
+   hTrackPhiRatePlusEndcap_3of4 = new TH1F("hTrackPhiRatePlusEndcap_3of4","CSCTF #phi: Plus Endcap (3 of 4 LCTs)",6,0,2*TMath::Pi());
+   hTrackPhiRateMinusEndcap_3of4 = new TH1F("hTrackPhiRateMinusEndcap_3of4","CSCTF #phi: Minus Endcap (3 of 4 LCTs)",6,0,2*TMath::Pi());
+
    hTrackLCTRateME42->GetXaxis()->SetTitle("Matched Stations");
-   hTrackLCTRateME42->GetYaxis()->SetTitle("Rate");
+   hTrackLCTRateME42->GetYaxis()->SetTitle("Tracks");
    hTrackLCTRateME42->SetMinimum(0);
    hTrackLCTRateNonME42->GetXaxis()->SetTitle("Matched Stations");
-   hTrackLCTRateNonME42->GetYaxis()->SetTitle("Rate");
+   hTrackLCTRateNonME42->GetYaxis()->SetTitle("Tracks");
    hTrackLCTRateNonME42->SetMinimum(0);
 
    hTrackPtRateME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-   hTrackPtRateME42->GetYaxis()->SetTitle("Rate");
+   hTrackPtRateME42->GetYaxis()->SetTitle("Tracks");
    hTrackPtRateNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-   hTrackPtRateNonME42->GetYaxis()->SetTitle("Rate");
+   hTrackPtRateNonME42->GetYaxis()->SetTitle("Tracks");
 
    hTrackPtME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-   hTrackPtME42->GetYaxis()->SetTitle("Events");
+   hTrackPtME42->GetYaxis()->SetTitle("Tracks");
    hTrackPtNonME42->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-   hTrackPtNonME42->GetYaxis()->SetTitle("Events");
+   hTrackPtNonME42->GetYaxis()->SetTitle("Tracks");
 
    hTrackPhiRatePlusEndcap->GetXaxis()->SetTitle("#phi (rad)");
-   hTrackPhiRatePlusEndcap->GetYaxis()->SetTitle("Events");
+   hTrackPhiRatePlusEndcap->GetYaxis()->SetTitle("Tracks");
    hTrackPhiRatePlusEndcap->SetMinimum(0);
    hTrackPhiRateMinusEndcap->GetXaxis()->SetTitle("#phi (rad)");
-   hTrackPhiRateMinusEndcap->GetYaxis()->SetTitle("Events");
+   hTrackPhiRateMinusEndcap->GetYaxis()->SetTitle("Tracks");
    hTrackPhiRateMinusEndcap->SetMinimum(0);
 }
 
@@ -181,10 +194,10 @@ void L1CSCTFAnalysis::end() {
    // things to do after run
    
    // normalize rate plots to first bin
-   hTrackLCTRateME42->Scale(1./hTrackLCTRateME42->GetBinContent(1));
-   hTrackLCTRateNonME42->Scale(1./hTrackLCTRateNonME42->GetBinContent(1));
-   hTrackPtRateME42->Scale(1./hTrackPtRateME42->GetBinContent(1));
-   hTrackPtRateNonME42->Scale(1./hTrackPtRateNonME42->GetBinContent(1));
+   //hTrackLCTRateME42->Scale(1./hTrackLCTRateME42->GetBinContent(1));
+   //hTrackLCTRateNonME42->Scale(1./hTrackLCTRateNonME42->GetBinContent(1));
+   //hTrackPtRateME42->Scale(1./hTrackPtRateME42->GetBinContent(1));
+   //hTrackPtRateNonME42->Scale(1./hTrackPtRateNonME42->GetBinContent(1));
 }
 
 bool L1CSCTFAnalysis::isME42Region(int endcap, int sector, int eta, int phi) {
@@ -234,15 +247,22 @@ void L1CSCTFAnalysis::outputLCTProperties(int endcap, int sector, int subsector,
    std::cout << " eta: " << eta << " phi: " << phi << std::endl;
 }
 
-void L1CSCTFAnalysis::doTrackLCTRatePlots(int size, bool isME42) {
-   if (isME42) { ratePlotHelper(hTrackLCTRateME42,5,0,4,size); }
+void L1CSCTFAnalysis::doTrackLCTRatePlots(int size, bool isME42, int lctSize) {
+   if (isME42) { 
+      ratePlotHelper(hTrackLCTRateME42,5,0,4,size); 
+      if (lctSize>=3) { ratePlotHelper(hTrackLCTRateME42_3of4,5,0,4,size); } 
+   }
    else { ratePlotHelper(hTrackLCTRateNonME42,5,0,4,size); }
 }
 
-void L1CSCTFAnalysis::doTrackPtPlots(double pt, bool isME42) {
+void L1CSCTFAnalysis::doTrackPtPlots(double pt, bool isME42, int lctSize) {
    if (isME42) { 
       hTrackPtME42->Fill(pt);
       ratePlotHelper(hTrackPtRateME42,8,0,140,pt); 
+      if (lctSize>=3) {
+         hTrackPtME42_3of4->Fill(pt);
+         ratePlotHelper(hTrackPtRateME42_3of4,8,0,140,pt); 
+      }
    }
    else { 
       hTrackPtNonME42->Fill(pt);
@@ -257,7 +277,9 @@ void L1CSCTFAnalysis::ratePlotHelper(TH1* hist, int nBins, double min, double ma
    }
 }
 
-void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap) {
+void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap, int lctSize) {
    if (endcap==1) { hTrackPhiRatePlusEndcap->Fill(phi); }
    else { hTrackPhiRateMinusEndcap->Fill(phi); }
+   if (endcap==1 && lctSize>=3) { hTrackPhiRatePlusEndcap_3of4->Fill(phi); }
+   else if (lctSize>=3) { hTrackPhiRateMinusEndcap_3of4->Fill(phi); }
 }
