@@ -39,7 +39,7 @@ public :
    void doChamberOccupancy(int ME1, int ME2, int ME3, int ME4, bool isME42);
    void outputLCTProperties(int endcap, int sector, int subsector, int station, int ring, int chamber, int CSCID, int eta, int phi, int strip, int wire);
    void doTrackLCTRatePlots(int size, bool isME42, int lctSize);
-   void doTrackPhiRatePlots(double phi, int endcap, int lctSize);
+   void doTrackPhiRatePlots(double phi, int endcap, int lctSize, bool isME42);
    void doTrackPtPlots(double pt, bool isME42, int lctSize);
    void ratePlotHelper(TH1* hist, int nBins, double min, double max, double val);
    void do2Lct3LctEfficiency(double eta, double phi, double pt, int lctSize, int ME4, bool isME42);
@@ -109,12 +109,13 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
       // loop over tracks
       int trackSize = csctf_->trSize;
       for (int trk = 0; trk<trackSize; trk++) {
+         int lctSize = csctf_->trNumLCTs[trk];
+         if (lctSize==0) { break; }
          double trackEta = csctf_->trEta[trk];
          double trackPhi = csctf_->trPhi_02PI[trk];
          double trackPt = csctf_->trPt[trk];
          int trackEndcap = csctf_->trEndcap[trk];
 
-         int lctSize = csctf_->trNumLCTs[trk];
          // check if track crosses ME42 region
          int outerLctEta = csctf_->trLctglobalEta[trk][lctSize-1];   // goes from 0-125 within endcap
          int outerLctPhi = csctf_->trLctglobalPhi[trk][lctSize-1];   // goes from ~50-4050 in sector
@@ -137,7 +138,7 @@ void L1CSCTFAnalysis::run(Long64_t nevents)
             doChamberOccupancy(ME1,ME2,ME3,ME4,isME42);
             doTrackLCTRatePlots(lctSize,isME42,lctSize);
             doTrackPtPlots(trackPt,isME42,lctSize);
-            doTrackPhiRatePlots(trackPhi,trackEndcap,lctSize);
+            doTrackPhiRatePlots(trackPhi,trackEndcap,lctSize,isME42);
             do2Lct3LctEfficiency(trackEta,trackPhi,trackPt,lctSize,ME4,isME42);
          }
       }
@@ -320,11 +321,16 @@ void L1CSCTFAnalysis::ratePlotHelper(TH1* hist, int nBins, double min, double ma
    }
 }
 
-void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap, int lctSize) {
-   if (endcap==1) { hTrackPhiRatePlusEndcap->Fill(phi); }
-   else { hTrackPhiRateMinusEndcap->Fill(phi); }
-   if (endcap==1 && lctSize>=3) { hTrackPhiRatePlusEndcap_3of4->Fill(phi); }
-   else if (lctSize>=3) { hTrackPhiRateMinusEndcap_3of4->Fill(phi); }
+void L1CSCTFAnalysis::doTrackPhiRatePlots(double phi, int endcap, int lctSize, bool isME42) {
+   if (endcap==1) { 
+      hTrackPhiRatePlusEndcap->Fill(phi); 
+      if (lctSize>=3 && isME42) { hTrackPhiRatePlusEndcap_3of4->Fill(phi); }
+      else if (!isME42) { hTrackPhiRatePlusEndcap_3of4->Fill(phi); }
+   }
+   else { 
+      hTrackPhiRateMinusEndcap->Fill(phi);
+      hTrackPhiRateMinusEndcap_3of4->Fill(phi); 
+   }
 }
 
 void L1CSCTFAnalysis::do2Lct3LctEfficiency(double eta, double phi, double pt, int lctSize, int ME4, bool isME42) {
