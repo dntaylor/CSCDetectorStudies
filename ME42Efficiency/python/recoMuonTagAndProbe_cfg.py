@@ -12,10 +12,12 @@ HLTTRIGGER = cms.vstring( 'HLT_IsoMu24_v*', 'HLT_IsoMu24_eta2p1_v*', 'HLT_Mu40_v
 OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 
 MUONCUT = "pt>20 && abs(eta)<2.4"
-ME42CUT = " && 1.396<phi<2.269"
-NOME42CUT = " && (phi<1.396 || phi>2.269)"
+PLUSME42ETACUT = " && eta>1.2 && eta<1.8"
+MINUSME42ETACUT = " && eta<-1.2 && eta>-1.8"
+ME42PHICUT = " && phi>75*3.14159/180 && phi<125*3.14159/180"
+NOME42PHICUT = " && (phi<75*3.14159/180 || phi>125*3.14159/180)"
 TAGMUONCOLLECTION = "muons"
-PROBEMUONCOLLECTION = "generalTracks" 
+PROBEMUONCOLLECTION = "muons" 
 
 TAGMUONCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -26,13 +28,12 @@ TAGMUONCUT = MUONCUT + \
 	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && abs(muonBestTrack().dxy(vertex.position()))<0.2" #+ \
 #	" && abs(muonBestTrack().dz(vertex.position()))<0.5"
-PROBEMUONCUT = MUONCUT #+ \
+PROBEMUONCUT = MUONCUT + \
+	" && isStandAloneMuon" #+ \
 #	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
 PASSPROBEMUONCUT = MUONCUT +\
 	" && isGlobalMuon && isPFMuon && isTrackerMuon"
-REQUIRE3OF4CSC = " && numberOfMatchedStations>2"
-REQUIRE4OF4CSC = " && numberOfMatchedStations>3"
 
 LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
 TIGHTMUON = "isPFMuon && isGlobalMuon" + \
@@ -91,30 +92,14 @@ import FWCore.PythonUtilities.LumiList as LumiList
 process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange()
 
 ###
-# merge muons
-###
-process.allMuons = cms.EDProducer("CaloMuonMerger",
-	mergeTracks = cms.bool(False),
-	mergeCaloMuons = cms.bool(True),
-	muons = cms.InputTag("muons"), 
-	caloMuons = cms.InputTag("calomuons"),
-	tracks = cms.InputTag("generalTracks"),
-	minCaloCompatibility = calomuons.minCaloCompatibility,
-	muonsCut     = cms.string("pt > 3 && track.isNonnull"),
-	caloMuonsCut = cms.string("pt > 3"),
-	tracksCut    = cms.string("pt > 3"),
-)
-
-###
 # tag and probe selections
 ###
 process.tagMuons = cms.EDFilter("MuonRefSelector",
 	src = cms.InputTag(TAGMUONCOLLECTION),
 	cut = cms.string(TAGMUONCUT),
-	filter = cms.bool(True),
 )
 
-process.probeMuons = cms.EDFilter("RefSelector",
+process.probeMuons = cms.EDFilter("MuonRefSelector",
 	src = cms.InputTag(PROBEMUONCOLLECTION),
 	cut = cms.string(PROBEMUONCUT),
 )
@@ -124,10 +109,27 @@ process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 	cut = cms.string(ZMASSCUT),
 )
 
-process.probeMuonsWithME42 = process.probeMuons.clone( cut = PROBEMUONCUT + ME42CUT )
-process.probeMuonsWithoutME42 = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42CUT )
-process.ZTagProbeWithME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithME42@-") )
-process.ZTagProbeWithoutME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsWithoutME42@-") )
+# clones for various conditions
+process.tagMuonsME42 = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
+process.tagMuonsNoME42 = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + NOME42PHICUT ) 
+process.tagMuonsME42Eta = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT ) 
+process.tagMuonsNoME42Eta = process.tagMuons.clone( cut = TAGMUONCUT + MINUSME42ETACUT ) 
+process.tagMuonsME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + ME42PHICUT ) 
+process.tagMuonsNoME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + NOME42PHICUT ) 
+
+process.probeMuonsME42 = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
+process.probeMuonsNoME42 = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + NOME42PHICUT )
+process.probeMuonsME42Eta = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT ) 
+process.probeMuonsNoME42Eta = process.probeMuons.clone( cut = TAGMUONCUT + MINUSME42ETACUT ) 
+process.probeMuonsME42Phi = process.probeMuons.clone( cut = TAGMUONCUT + ME42PHICUT ) 
+process.probeMuonsNoME42Phi = process.probeMuons.clone( cut = TAGMUONCUT + NOME42PHICUT ) 
+
+process.ZTagProbeME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42@+ probeMuonsME42@-"), )
+process.ZTagProbeNoME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42@+ probeMuonsNoME42@-"), )
+process.ZTagProbeME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42Eta@+ probeMuonsME42Eta@-"), )
+process.ZTagProbeNoME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42Eta@+ probeMuonsNoME42Eta@-"), )
+process.ZTagProbeME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42Phi@+ probeMuonsME42Phi@-"), )
+process.ZTagProbeNoME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42Phi@+ probeMuonsNoME42Phi@-"), )
 
 ###
 # produce tag and probe trees
@@ -139,38 +141,35 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		pt = cms.string("pt"),
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
-#		numberOfMatchedStations = cms.string("numberOfMatchedStations"),
-#		numberOfValidMuonHits = cms.string("globalTrack().hitPattern().numberOfValidMuonHits"),
 	),
 	flags = cms.PSet(
-		passingPFMuon = cms.string("isPFMuon"),
-		passingCaloMuon = cms.string("isCaloMuon"),
-		passingTrackerMuon = cms.string("isTrackerMuon"),
-		passingLooseMuon = cms.string(LOOSEMUON),
-		passingGlobalMuon = cms.string("isGlobalMuon"),
 		passingTightMuon = cms.string(TIGHTMUON),
-		passing3Of4Stations = cms.string("numberOfMatchedStations>2"),
-		passing4Of4Stations = cms.string("numberOfMatchedStations>3"),
+		passingLooseMuon = cms.string(LOOSEMUON),
 	),
 	addRunLumiInfo = cms.bool(True),
 	isMC = cms.bool(MCFLAG),
 )
 
-process.tagAndProbeTreeWithME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithME42") )
-process.tagAndProbeTreeWithoutME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeWithoutME42") )
+# clone tag and probe trees
+process.tagAndProbeTreeME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42") )
+process.tagAndProbeTreeNoME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42") )
+process.tagAndProbeTreeME42Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42Eta") )
+process.tagAndProbeTreeNoME42Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Eta") )
+process.tagAndProbeTreeME42Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42Phi") )
+process.tagAndProbeTreeNoME42Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Phi") )
 
 ###
 # path
 ###
 process.TagAndProbe = cms.Path(
-	process.allMuons *
 	process.tagMuons *
+	(process.tagMuonsME42 + process.tagMuonsNoME42 + process.tagMuonsME42Eta + process.tagMuonsNoME42Eta + process.tagMuonsME42Phi + process.tagMuonsNoME42Phi) *
 	process.probeMuons *
-	(process.probeMuonsWithME42 + process.probeMuonsWithoutME42) *
+	(process.probeMuonsME42 + process.probeMuonsNoME42 + process.probeMuonsME42Eta + process.probeMuonsNoME42Eta + process.probeMuonsME42Phi + process.probeMuonsNoME42Phi) *
 	process.ZTagProbe *
-	(process.ZTagProbeWithME42 + process.ZTagProbeWithoutME42) *
+	(process.ZTagProbeME42 + process.ZTagProbeNoME42 + process.ZTagProbeME42Eta + process.ZTagProbeNoME42Eta + process.ZTagProbeME42Phi + process.ZTagProbeNoME42Phi) *
 	process.tagAndProbeTree * 
-	(process.tagAndProbeTreeWithME42 + process.tagAndProbeTreeWithoutME42)
+	(process.tagAndProbeTreeME42 + process.tagAndProbeTreeNoME42 + process.tagAndProbeTreeME42Eta + process.tagAndProbeTreeNoME42Eta + process.tagAndProbeTreeME42Phi + process.tagAndProbeTreeNoME42Phi) 
 )
 
 ###
