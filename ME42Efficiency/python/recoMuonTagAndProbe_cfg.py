@@ -79,7 +79,7 @@ process.source = cms.Source("PoolSource",
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE1140ED-B870-E211-8D82-485B39800B8D.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE98E065-5D72-E211-8D86-20CF305616D0.root',
 #                '/store/data/Run2012B/SingleMu/AOD/22Jan2013-v1/30000/FE8A9D5D-7072-E211-82CB-00259073E36E.root',
-		'file:SingleMu_Run2012A_RECO.root'
+#		'file:SingleMu_Run2012A_RECO.root'
 	)
 )
 

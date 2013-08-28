@@ -20,7 +20,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
-		phi = cms.vstring("Phobe #phi", "-3.14159", "3.14159", ""),
+		phi = cms.vstring("Probe #phi", "-3.14159", "3.14159", ""),
 	),
 	Categories = cms.PSet(
 		passingTightMuon = cms.vstring("tight", "dummy[true=1,false=0]"),
