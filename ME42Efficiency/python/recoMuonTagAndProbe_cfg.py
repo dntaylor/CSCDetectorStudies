@@ -117,12 +117,12 @@ process.tagMuonsNoME42Eta = process.tagMuons.clone( cut = TAGMUONCUT + MINUSME42
 process.tagMuonsME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + ME42PHICUT ) 
 process.tagMuonsNoME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + NOME42PHICUT ) 
 
-process.probeMuonsME42 = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
-process.probeMuonsNoME42 = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + NOME42PHICUT )
-process.probeMuonsME42Eta = process.probeMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT ) 
-process.probeMuonsNoME42Eta = process.probeMuons.clone( cut = TAGMUONCUT + MINUSME42ETACUT ) 
-process.probeMuonsME42Phi = process.probeMuons.clone( cut = TAGMUONCUT + ME42PHICUT ) 
-process.probeMuonsNoME42Phi = process.probeMuons.clone( cut = TAGMUONCUT + NOME42PHICUT ) 
+process.probeMuonsME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
+process.probeMuonsNoME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + NOME42PHICUT )
+process.probeMuonsME42Eta = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT ) 
+process.probeMuonsNoME42Eta = process.probeMuons.clone( cut = PROBEMUONCUT + MINUSME42ETACUT ) 
+process.probeMuonsME42Phi = process.probeMuons.clone( cut = PROBEMUONCUT + ME42PHICUT ) 
+process.probeMuonsNoME42Phi = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42PHICUT ) 
 
 process.ZTagProbeME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42@+ probeMuonsME42@-"), )
 process.ZTagProbeNoME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42@+ probeMuonsNoME42@-"), )

@@ -77,7 +77,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 			EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
-				phi = cms.vdouble(-TMath.Pi(), -2/3*TMath.Pi(), -TMath.Pi()/3, 0, TMath.Pi()/3, 2/3*TMath.Pi(), TMath.Pi()),
+				phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
@@ -104,14 +104,16 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 			EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		        UnbinnedVariables = cms.vstring("mass"),
 			BinnedVariables = cms.PSet(
-				phi = cms.vdouble(-TMath.Pi(), -2/3*TMath.Pi(), -TMath.Pi()/3, 0, TMath.Pi()/3, 2/3*TMath.Pi(), TMath.Pi()),
+				phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
 			),
 			BinToPDFmap = cms.vstring("voigtianPlusExponential")
 		),
 	)
 )
 
+####
 # analyzer clones
+####
 process.TagProbeFitTreeAnalyzerME42 = process.TagProbeFitTreeAnalyzer.clone( 
 	InputDirectoryName = cms.string("tagAndProbeTreeME42"),
         OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisME42.root"),
@@ -137,6 +139,9 @@ process.TagProbeFitTreeAnalyzerNoME42Phi = process.TagProbeFitTreeAnalyzer.clone
         OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisNoME42Phi.root"),
 )
 
+####
+# Path
+####
 process.fitness = cms.Path(
 	process.TagProbeFitTreeAnalyzer *
 	(process.TagProbeFitTreeAnalyzerME42 + process.TagProbeFitTreeAnalyzerNoME42 + process.TagProbeFitTreeAnalyzerME42Eta + process.TagProbeFitTreeAnalyzerNoME42Eta + process.TagProbeFitTreeAnalyzerME42Phi + process.TagProbeFitTreeAnalyzerNoME42Phi)
