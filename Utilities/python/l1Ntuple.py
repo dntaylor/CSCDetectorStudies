@@ -30,7 +30,7 @@ process.GlobalTag.globaltag = 'GR_R_53_V21::All'
 
 # output file
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('L1Tree_SingleMu_Run2012A_RAW-RECO.root')
+    fileName = cms.string('L1Tree_SingleMu_Run2012A_RAW.root')
 )
 
 # analysis
@@ -66,7 +66,7 @@ process.source = cms.Source ("PoolSource",
                              )
 
 readFiles.extend( [
-    'file:SingleMu_Run2012A_RAW.root',
+#    'file:SingleMu_Run2012A_RAW.root',
 ] )
 
 secFiles.extend( [
