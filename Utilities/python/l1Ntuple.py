@@ -30,7 +30,7 @@ process.GlobalTag.globaltag = 'GR_R_53_V21::All'
 
 # output file
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('L1Tree_SingleMu_Run2012A_RAW.root')
+    fileName = cms.string('L1Tree_SingleMu_Run2012D_RAW.root')
 )
 
 # analysis
