@@ -1,28 +1,27 @@
 void plot()
 {
    TFile* Plots = new TFile("plots.root","RECREATE");
-   TFile ME42("ME42TagAndProbeTreeAnalysisME42.root");
-   TFile NoME42("ME42TagAndProbeTreeAnalysisNoME42.root");
-   TFile ME42Eta("ME42TagAndProbeTreeAnalysisME42Eta.root");
-   TFile NoME42Eta("ME42TagAndProbeTreeAnalysisNoME42Eta.root");
-   TFile ME42Phi("ME42TagAndProbeTreeAnalysisME42Phi.root");
-   TFile NoME42Phi("ME42TagAndProbeTreeAnalysisNoME42Phi.root");
 
-   TH1F* hME42EtaLoose = (TH1F*)ME42Phi.Get("loose_eta.fit_eff_plots.eta_PLOT");
-   TH1F* hME42EtaTight = (TH1F*)ME42Phi.Get("tight_eta.fit_eff_plots.eta_PLOT");
-   TH1F* hNoME42EtaLoose = (TH1F*)NoME42Phi.Get("loose_eta.fit_eff_plots.eta_PLOT");
-   TH1F* hNoME42EtaTight = (TH1F*)NoME42Phi.Get("tight_eta.fit_eff_plots.eta_PLOT");
+   TFile* ME42Phi = TFile::Open("ME42TagAndProbeTreeAnalysisME42Phi.root");
+   TFile* NoME42Phi = TFile::Open("ME42TagAndProbeTreeAnalysisNoME42Phi.root");
 
-   plot(hME42EtaLoose,hNoME42EtaLoose,Plots,"LooseEta","Loose #eta");
-   plot(hME42EtaTight,hNoME42EtaTight,Plots,"TightEta","Tight #eta");
-}
+   TDirectory* ME42PhiLooseEtaDir = ME42Phi->GetDirectory("tagAndProbeTreeME42Phi/loose_eta/fit_eff_plots/");
+   TDirectory* NoME42PhiLooseEtaDir = NoME42Phi->GetDirectory("tagAndProbeTreeNoME42Phi/loose_eta/fit_eff_plotsi/");
 
-void plot(TH1F* hME42, TH1F* hNoME42, TFile* file, string name, string title)
-{
-   //hME42->SetLineColor(2);
-   //hNoME42->SetLineColor(3);
-   //hME42->Draw();
-   //hNoME42->Draw("same");
-   //file->Write();
+   TCanvas* cME42LooseEta = (TCanvas*)ME42PhiLooseEtaDir->Get("eta_PLOT");
+   TCanvas* cNoME42LooseEta = (TCanvas*)NoME42PhiLooseEtaDir->Get("eta_PLOT");
+
+   RooHist* rhME42LooseEta = (RooHist*)cME42LooseEta->GetPrimitive("hxy_fit_eff");
+   RooHist* rhNoME42LooseEta = (RooHist*)cNoME42LooseEta->GetPrimitive("hxy_fit_eff");
+
+   TH1F* hME42LooseEta = (TH1F*)rhME42LooseEta->GetHistogram();
+   TH1F* hNoME42LooseEta = (TH1F*)rhNoME42LooseEta->GetHistogram();
+
+   hME42EtaLoose->Draw();
+   hNoME42EtaLoose->Draw("same");
+   hME42EtaLoose->SetLineColor(2);
+   hNoME42EtaLoose->SetLineColor(3);
+   c1->Update()
+   Plots->Write();
 }
 
