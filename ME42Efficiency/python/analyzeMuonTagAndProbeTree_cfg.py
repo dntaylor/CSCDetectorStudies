@@ -3,13 +3,16 @@ from ROOT import TMath
 
 # Choose analysis to run
 #ANALYSIS = 0 # all (not coded)
-ANALYSIS = 1 # basic
+#ANALYSIS = 1 # basic
 #ANALYSIS = 2 # ME42
-#ANALYSIS = 3 # NoME42
-#ANALYSIS = 4 # ME42Eta
-#ANALYSIS = 5 # NoME42Eta
-#ANALYSIS = 6 # ME42Phi
-#ANALYSIS = 7 # NoME42Phi
+#ANALYSIS = 3 # ME42With3Of4
+#ANALYSIS = 4 # NoME42
+#ANALYSIS = 5 # ME42Eta
+#ANALYSIS = 6 # ME42With3Of4Eta
+#ANALYSIS = 7 # NoME42Eta
+#ANALYSIS = 8 # ME42Phi
+#ANALYSIS = 9 # ME42With3Of4Phi
+#ANALYSIS = 10# NoME42Phi
 
 # file variables
 if ANALYSIS==0:
@@ -21,18 +24,27 @@ elif ANALYSIS==2:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeME42"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42.root"
 elif ANALYSIS==3:
+	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4"
+	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4.root"
+elif ANALYSIS==4:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42.root"
-elif ANALYSIS==4:
+elif ANALYSIS==5:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeME42Eta"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42Eta.root"
-elif ANALYSIS==5:
+elif ANALYSIS==6:
+	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4Eta"
+	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4Eta.root"
+elif ANALYSIS==7:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42Eta"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42Eta.root"
-elif ANALYSIS==6:
+elif ANALYSIS==8:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeME42Phi"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42Phi.root"
-elif ANALYSIS==7:
+elif ANALYSIS==9:
+	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4Phi"
+	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4Phi.root"
+elif ANALYSIS==10:
 	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42Phi"
 	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42Phi.root"
 
