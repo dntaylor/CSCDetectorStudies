@@ -32,13 +32,107 @@ void plot_all()
 {
    TFile* Plots = new TFile("plots.root","RECREATE");
 
-   plot_single(Plots,"ME42TagAndProbeTreeAnalysisME42Phi.root","ME42TagAndProbeTreeAnalysisNoME42Phi.root","tagAndProbeTreeME42Phi/loose_eta/fit_eff_plots/","tagAndProbeTreeNoME42Phi/loose_eta/fit_eff_plots/","eta_PLOT","cLooseEta","Loose #eta");
-   plot_single(Plots,"ME42TagAndProbeTreeAnalysisME42Phi.root","ME42TagAndProbeTreeAnalysisNoME42Phi.root","tagAndProbeTreeME42Phi/tight_eta/fit_eff_plots/","tagAndProbeTreeNoME42Phi/tight_eta/fit_eff_plots/","eta_PLOT","cTightEta","Tight #eta");
+   TCanvas* cLooseEta = plot_single("eta","loose");
+   TCanvas* cTightEta = plot_single("eta","tight");
+   TCanvas* cLoosePhi = plot_single("phi","loose");
+   TCanvas* cTightPhi = plot_single("Phi","tight");
+   TCanvas* cLoosePt = plot_single("pt","loose");
+   TCanvas* cTightPt = plot_single("pt","tight");
 
+   Plots->WriteTObject(cLooseEta);
+   Plots->WriteTObject(cTightEta);
+   Plots->WriteTObject(cLoosePhi);
+   Plots->WriteTObject(cTightPhi);
+   Plots->WriteTObject(cLoosePt);
+   Plots->WriteTObject(cTightPt);
+
+   Plots->Close();
 }
 
-void plot_single(TFile* Plots, TString ME42FileName, TString NoME42FileName, TString ME42DirName, TString NoME42DirName, TString PlotName, TString cName, TString cTitle)
+TCanvas* plot_single(TString var, TString type)
 {
+   switch (var) 
+   {
+   case "eta":
+      TString ME42FileName = "ME42TagAndProbeTreeAnalysisME42Phi.root";
+      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisNoME42Phi.root";
+      TString PlotName = "eta_PLOT";
+      TString VarName = "#eta";
+      switch (type)
+      {
+      case "loose":
+         TString ME42DirName = "tagAndProbeTreeME42Phi/loose_eta/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Phi/loose_eta/fit_eff_plots/";
+         TString cName = "cLooseEta";
+         TString cTitle = "Loose #eta";
+         TString rVar = "rLooseEta";
+         break;
+      case "tight":
+         TString ME42DirName = "tagAndProbeTreeME42Phi/tight_eta/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Phi/tight_eta/fit_eff_plots/";
+         TString cName = "cTightEta";
+         TString cTitle = "Tight #eta";
+         TString rVar = "rTightEta";
+         break;
+      default:
+         break;
+      }
+      break;
+   case "phi":
+      TString ME42FileName = "ME42TagAndProbeTreeAnalysisME42Eta.root";
+      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisNoME42Eta.root";
+      TString PlotName = "phi_PLOT";
+      TString VarName = "#phi";
+      switch (type)
+      {
+      case "loose":
+         TString ME42DirName = "tagAndProbeTreeME42Eta/loose_phi/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Eta/loose_phi/fit_eff_plots/";
+         TString cName = "cLoosePhi";
+         TString cTitle = "Loose #phi";
+         TString rVar = "rLoosePhi";
+         break;
+      case "tight":
+         TString ME42DirName = "tagAndProbeTreeME42Eta/tight_phi/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Eta/tight_phi/fit_eff_plots/";
+         TString cName = "cTightPhi";
+         TString cTitle = "Tight #phi";
+         TString rVar = "rTightPhi";
+         break;
+      default:
+         break;
+      }
+      break;
+   case "pt":
+      TString ME42FileName = "ME42TagAndProbeTreeAnalysisME42.root";
+      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisNoME42.root";
+      TString PlotName = "pt_PLOT";
+      TString VarName = "p_{T}";
+      switch (type)
+      {
+      case "loose":
+         TString ME42DirName = "tagAndProbeTreeME42/loose_pt/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42/loose_pt/fit_eff_plots/";
+         TString cName = "cLoosePt";
+         TString cTitle = "Loose p_{T}";
+         TString rVar = "rLoosePt";
+         break;
+      case "tight":
+         TString ME42DirName = "tagAndProbeTreeME42/tight_pt/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42/tight_pt/fit_eff_plots/";
+         TString cName = "cTightPt";
+         TString cTitle = "Tight p_{T}";
+         TString rVar = "rTightPt";
+         break;
+      default:
+         break;
+      }
+      break;
+   default:
+      break;
+   }
+
+
    TFile* ME42 = TFile::Open(ME42FileName);
    TFile* NoME42 = TFile::Open(NoME42FileName);
 
@@ -50,17 +144,20 @@ void plot_single(TFile* Plots, TString ME42FileName, TString NoME42FileName, TSt
 
    RooHist* rhME42 = (RooHist*)cME42->GetPrimitive("hxy_fit_eff");
    RooHist* rhNoME42 = (RooHist*)cNoME42->GetPrimitive("hxy_fit_eff");
+   
+   //Plots->cd();
+   TCanvas* c = new TCanvas(cName,cTitle,800,600);
 
-   TH1F* hME42 = (TH1F*)rhME42->GetHistogram();
-   TH1F* hNoME42 = (TH1F*)rhNoME42->GetHistogram();
+   RooRealVar x(rVar,VarName,rhME42->GetXaxis()->GetXmin(),rhME42->GetXaxis()->GetXmax());
+   RooPlot* frame = x.frame();
 
-   TCanvas* c = new TCanvas(cName,cTitle,600,600);
-   c->cd();
+   rhME42->SetLineColor(kRed);
+   rhNoME42->SetLineColor(kBlue);
 
-   hME42->Draw();
-   hNoME42->Draw("same");
-   hME42->SetLineColor(2);
-   hNoME42->SetLineColor(4);
+   frame->addPlotable(rhME42,"P");
+   frame->addPlotable(rhNoME42,"P");
+   frame->Draw();
    c->Update();
-   Plots->Write();
+   //c->Write();
+   return c
 }
