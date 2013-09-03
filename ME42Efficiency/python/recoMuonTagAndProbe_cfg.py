@@ -43,12 +43,12 @@ TIGHTMUON = "isPFMuon && isGlobalMuon" + \
 	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && abs(muonBestTrack().dxy(vertex.position()))<0.2" + \
 #	" && abs(muonBestTrack().dz(vertex.position()))<0.5"
-WITH3OF4CUT = " && (((outerTrack().outerEta()>1.2 && outerTrack().outerEta()<1.8" + \
+WITH3OF4CUT = " && ((outerTrack().outerEta()>1.2 && outerTrack().outerEta()<1.8" + \
 	" && outerTrack().outerPhi()>(75.*3.14159/180.)" + \
-	" && outerTrack().outerPhi()<(125.*3.14159/180.) && numberOfMatchedStations>2))" + \
-	" || ((outerTrack().outerEta()<1.2 || outerTrack().outerEta()>1.8" + \
+	" && outerTrack().outerPhi()<(125.*3.14159/180.) && numberOfMatchedStations>2)" + \
+	" || (outerTrack().outerEta()<1.2 || outerTrack().outerEta()>1.8" + \
 	" || outerTrack().outerPhi()<(75.*3.14159/180.)" + \
-	" || outerTrack().outerPhi()>(125.*3.14159/180.)) && numberOfMatchedStations>1))"
+	" || outerTrack().outerPhi()>(125.*3.14159/180.)))"
 
 ZMASSCUT = "60.0 < mass < 120.0"
 

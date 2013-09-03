@@ -6,15 +6,15 @@ void plot_all()
    TCanvas* cTightEta = plot_single("eta","tight");
    TCanvas* cLoosePhi = plot_single("phi","loose");
    TCanvas* cTightPhi = plot_single("phi","tight");
-   //TCanvas* cLoosePt = plot_single("pt","loose");
-   //TCanvas* cTightPt = plot_single("pt","tight");
+   TCanvas* cLoosePt = plot_single("pt","loose");
+   TCanvas* cTightPt = plot_single("pt","tight");
 
    Plots->WriteTObject(cLooseEta);
    Plots->WriteTObject(cTightEta);
    Plots->WriteTObject(cLoosePhi);
    Plots->WriteTObject(cTightPhi);
-   //Plots->WriteTObject(cLoosePt);
-   //Plots->WriteTObject(cTightPt);
+   Plots->WriteTObject(cLoosePt);
+   Plots->WriteTObject(cTightPt);
 
    Plots->Close();
 }
@@ -124,7 +124,37 @@ TCanvas* plot_single(string var, string type)
    frame->addPlotable(rhME42,"P");
    frame->addPlotable(rhME42With3Of4,"P");
    frame->addPlotable(rhNoME42,"P");
+   frame->SetMinimum(0.8);
+   frame->SetMaximum(1.0);
+   frame->SetTitle(cTitle);
+   frame->SetYTitle("Efficiency");
    frame->Draw();
+
+   // Draw Legend
+   TLegend* l = new TLegend(0.1,0.1,0.4,0.2);
+   l->AddEntry(rhME42,"ME4/2 Region","l");
+   l->AddEntry(rhME42With3Of4,"ME4/2 Region (Req. 3 Stations)","l");
+   l->AddEntry(rhNoME42,"Non-ME4/2 Region","l");
+   l->Draw();
+
+   // draw lines
+   if (var=="eta") {
+      TLine* l1 = new TLine(1.2,0.8,1.2,1);
+      TLine* l2 = new TLine(1.8,0.8,1.8,1);
+      l1->SetLineStyle(2);
+      l2->SetLineStyle(2);
+      l1->Draw();
+      l2->Draw();
+   }
+   if (var=="phi") {
+      TLine* l1 = new TLine(60.*TMath::Pi()/180.,0.8,60.*TMath::Pi()/180.,1);
+      TLine* l2 = new TLine(120.*TMath::Pi()/180.,0.8,120.*TMath::Pi()/180.,1);
+      l1->SetLineStyle(2);
+      l2->SetLineStyle(2);
+      l1->Draw();
+      l2->Draw();
+   }
+
    c->Update();
    return c;
 }
