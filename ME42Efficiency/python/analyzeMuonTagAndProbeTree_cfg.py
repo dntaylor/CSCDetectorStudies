@@ -4,7 +4,7 @@ from ROOT import TMath
 # Choose analysis to run
 #ANALYSIS = 0 # all (not coded)
 #ANALYSIS = 1 # basic
-ANALYSIS = 2 # ME42
+#ANALYSIS = 2 # ME42
 #ANALYSIS = 3 # ME42With3Of4
 #ANALYSIS = 4 # NoME42
 #ANALYSIS = 5 # ME42Eta
@@ -12,7 +12,7 @@ ANALYSIS = 2 # ME42
 #ANALYSIS = 7 # NoME42Eta
 #ANALYSIS = 8 # ME42Phi
 #ANALYSIS = 9 # ME42With3Of4Phi
-#ANALYSIS = 10# NoME42Phi
+ANALYSIS = 10# NoME42Phi
 
 # file variables
 if ANALYSIS==0:
