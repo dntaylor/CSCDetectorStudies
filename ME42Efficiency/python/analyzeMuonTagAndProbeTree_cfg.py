@@ -10,9 +10,9 @@ from ROOT import TMath
 #ANALYSIS = 5 # ME42Eta
 #ANALYSIS = 6 # ME42With3Of4Eta
 #ANALYSIS = 7 # NoME42Eta
-#ANALYSIS = 8 # ME42Phi
+ANALYSIS = 8 # ME42Phi
 #ANALYSIS = 9 # ME42With3Of4Phi
-ANALYSIS = 10# NoME42Phi
+#ANALYSIS = 10# NoME42Phi
 
 # file variables
 if ANALYSIS==0:
@@ -55,7 +55,7 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 60.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -64,43 +64,61 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 60.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
-	# tight muon eta cuts
-	tight_eta = cms.PSet(
+#	# tight muon eta cuts
+#	tight_eta = cms.PSet(
+#		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
+#		UnbinnedVariables = cms.vstring("mass"),
+#		BinnedVariables = cms.PSet(
+#			eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
+#		),
+#		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+#	),
+#	# loose muon eta cuts
+#	loose_eta = cms.PSet(
+#		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
+#		UnbinnedVariables = cms.vstring("mass"),
+#		BinnedVariables = cms.PSet(
+#			eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
+#		),
+#		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+#	),
+#	# tight muon phi cuts
+#	tight_phi = cms.PSet(
+#		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
+#		UnbinnedVariables = cms.vstring("mass"),
+#		BinnedVariables = cms.PSet(
+#			phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
+#		),
+#		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+#	),
+#	# loose muon phi cuts
+#	loose_phi = cms.PSet(
+#		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
+#		UnbinnedVariables = cms.vstring("mass"),
+#		BinnedVariables = cms.PSet(
+#			phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
+#		),
+#		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+#	),
+	# ME4/2 tight muon cut
+	tight_ME42 = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
+			isME42 = cms.vdouble(-0.5, 0.5, 1.5),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
-	# loose muon eta cuts
-	loose_eta = cms.PSet(
+	# ME4/2 loose muon cut
+	loose_ME42 = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			eta = cms.vdouble(-2.4, -1.8, -1.2, 0.0, 1.2, 1.8, 2.4),
-		),
-		BinToPDFmap = cms.vstring("voigtianPlusExponential")
-	),
-	# tight muon phi cuts
-	tight_phi = cms.PSet(
-		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
-		UnbinnedVariables = cms.vstring("mass"),
-		BinnedVariables = cms.PSet(
-			phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
-		),
-		BinToPDFmap = cms.vstring("voigtianPlusExponential")
-	),
-	# loose muon phi cuts
-	loose_phi = cms.PSet(
-		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
-		UnbinnedVariables = cms.vstring("mass"),
-		BinnedVariables = cms.PSet(
-			phi = cms.vdouble(-TMath.Pi(), -2.0/3.0*TMath.Pi(), -TMath.Pi()/3.0, 0, TMath.Pi()/3.0, 2.0/3.0*TMath.Pi(), TMath.Pi()),
+			isME42 = cms.vdouble(-0.5, 0.5, 1.5),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -141,6 +159,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
 		phi = cms.vstring("Probe #phi", "-3.14159", "3.14159", ""),
+		isME42 = cms.vstring("Probe Region","0","2",""),
 	),
 	Categories = cms.PSet(
 		passingTightMuon = cms.vstring("tight", "dummy[true=1,false=0]"),
