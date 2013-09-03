@@ -32,8 +32,6 @@ PROBEMUONCUT = MUONCUT + \
 	" && isStandAloneMuon" #+ \
 #	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
-PASSPROBEMUONCUT = MUONCUT +\
-	" && isGlobalMuon && isPFMuon && isTrackerMuon"
 
 LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
 TIGHTMUON = "isPFMuon && isGlobalMuon" + \
@@ -62,7 +60,10 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.GlobalTag.globaltag = GLOBALTAG
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
-process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+process.options = cms.untracked.PSet( 
+	wantSummary = cms.untracked.bool(True),
+#	SkipEvent = cms.untracked.vstring('ProductNotFound')
+)
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 ###
@@ -116,35 +117,32 @@ process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 )
 
 # clones for various conditions
-process.tagMuonsME42 = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
-process.tagMuonsME42With3Of4 = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + ME42PHICUT + WITH3OF4CUT ) 
-process.tagMuonsNoME42 = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + NOME42PHICUT ) 
-process.tagMuonsME42Eta = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT ) 
-process.tagMuonsME42With3Of4Eta = process.tagMuons.clone( cut = TAGMUONCUT + PLUSME42ETACUT + WITH3OF4CUT ) 
-process.tagMuonsNoME42Eta = process.tagMuons.clone( cut = TAGMUONCUT + MINUSME42ETACUT ) 
-process.tagMuonsME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + ME42PHICUT ) 
-process.tagMuonsME42With3Of4Phi = process.tagMuons.clone( cut = TAGMUONCUT + ME42PHICUT + WITH3OF4CUT ) 
-process.tagMuonsNoME42Phi = process.tagMuons.clone( cut = TAGMUONCUT + NOME42PHICUT ) 
-
-process.probeMuonsME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
-process.probeMuonsME42With3Of4 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + ME42PHICUT + WITH3OF4CUT ) 
-process.probeMuonsNoME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + NOME42PHICUT )
+#process.probeMuonsME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + ME42PHICUT ) 
+#process.probeMuonsME42With3Of4 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + ME42PHICUT + WITH3OF4CUT ) 
+#process.probeMuonsNoME42 = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + NOME42PHICUT )
 process.probeMuonsME42Eta = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT ) 
-process.probeMuonsME42With3Of4Eta = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + WITH3OF4CUT ) 
-process.probeMuonsNoME42Eta = process.probeMuons.clone( cut = PROBEMUONCUT + MINUSME42ETACUT ) 
+#process.probeMuonsME42With3Of4Eta = process.probeMuons.clone( cut = PROBEMUONCUT + PLUSME42ETACUT + WITH3OF4CUT ) 
+#process.probeMuonsNoME42Eta = process.probeMuons.clone( cut = PROBEMUONCUT + MINUSME42ETACUT ) 
 process.probeMuonsME42Phi = process.probeMuons.clone( cut = PROBEMUONCUT + ME42PHICUT ) 
-process.probeMuonsME42With3Of4Phi = process.probeMuons.clone( cut = PROBEMUONCUT + ME42PHICUT + WITH3OF4CUT ) 
-process.probeMuonsNoME42Phi = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42PHICUT ) 
+#process.probeMuonsME42With3Of4Phi = process.probeMuons.clone( cut = PROBEMUONCUT + ME42PHICUT + WITH3OF4CUT ) 
+#process.probeMuonsNoME42Phi = process.probeMuons.clone( cut = PROBEMUONCUT + NOME42PHICUT ) 
+#
+#process.ZTagProbeME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42@-"), )
+#process.ZTagProbeME42With3Of4 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42With3Of4@-"), )
+#process.ZTagProbeNoME42 = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsNoME42@-"), )
+process.ZTagProbeME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42Eta@-"), )
+#process.ZTagProbeME42With3Of4Eta = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42With3Of4Eta@-"), )
+#process.ZTagProbeNoME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsNoME42Eta@-"), )
+process.ZTagProbeME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42Phi@-"), )
+#process.ZTagProbeME42With3Of4Phi = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsME42With3Of4Phi@-"), )
+#process.ZTagProbeNoME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuons@+ probeMuonsNoME42Phi@-"), )
 
-process.ZTagProbeME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42@+ probeMuonsME42@-"), )
-process.ZTagProbeME42With3Of4 = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42With3Of4@+ probeMuonsME42With3Of4@-"), )
-process.ZTagProbeNoME42 = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42@+ probeMuonsNoME42@-"), )
-process.ZTagProbeME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42Eta@+ probeMuonsME42Eta@-"), )
-process.ZTagProbeME42With3Of4Eta = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42With3Of4Eta@+ probeMuonsME42With3Of4Eta@-"), )
-process.ZTagProbeNoME42Eta = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42Eta@+ probeMuonsNoME42Eta@-"), )
-process.ZTagProbeME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42Phi@+ probeMuonsME42Phi@-"), )
-process.ZTagProbeME42With3Of4Phi = process.ZTagProbe.clone( decay = cms.string("tagMuonsME42With3Of4Phi@+ probeMuonsME42With3Of4Phi@-"), )
-process.ZTagProbeNoME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuonsNoME42Phi@+ probeMuonsNoME42Phi@-"), )
+###
+# custom variables
+###
+process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
+	src = cms.InputTag(PROBEMUONCOLLECTION),
+)
 
 ###
 # produce tag and probe trees
@@ -156,6 +154,8 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		pt = cms.string("pt"),
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
+		# external variable
+		isME42 = cms.InputTag("ME42MuonCands"),
 	),
 	flags = cms.PSet(
 		passingTightMuon = cms.string(TIGHTMUON),
@@ -166,28 +166,31 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 )
 
 # clone tag and probe trees
-process.tagAndProbeTreeME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42") )
-process.tagAndProbeTreeME42With3Of4 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4") )
-process.tagAndProbeTreeNoME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42") )
+#process.tagAndProbeTreeME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42") )
+#process.tagAndProbeTreeME42With3Of4 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4") )
+#process.tagAndProbeTreeNoME42 = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42") )
 process.tagAndProbeTreeME42Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42Eta") )
-process.tagAndProbeTreeME42With3Of4Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4Eta") )
-process.tagAndProbeTreeNoME42Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Eta") )
+#process.tagAndProbeTreeME42With3Of4Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4Eta") )
+#process.tagAndProbeTreeNoME42Eta = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Eta") )
 process.tagAndProbeTreeME42Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42Phi") )
-process.tagAndProbeTreeME42With3Of4Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4Phi") )
-process.tagAndProbeTreeNoME42Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Phi") )
+#process.tagAndProbeTreeME42With3Of4Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeME42With3Of4Phi") )
+#process.tagAndProbeTreeNoME42Phi = process.tagAndProbeTree.clone( tagProbePairs = cms.InputTag("ZTagProbeNoME42Phi") )
 
 ###
 # path
 ###
 process.TagAndProbe = cms.Path(
-	process.tagMuons *
-	(process.tagMuonsME42 + process.tagMuonsME42With3Of4 + process.tagMuonsNoME42 + process.tagMuonsME42Eta + process.tagMuonsME42With3Of4Eta + process.tagMuonsNoME42Eta + process.tagMuonsME42Phi + process.tagMuonsME42With3Of4Phi + process.tagMuonsNoME42Phi) *
-	process.probeMuons *
-	(process.probeMuonsME42 + process.probeMuonsME42With3Of4 + process.probeMuonsNoME42 + process.probeMuonsME42Eta + process.probeMuonsME42With3Of4Eta + process.probeMuonsNoME42Eta + process.probeMuonsME42Phi + process.probeMuonsME42With3Of4Phi + process.probeMuonsNoME42Phi) *
-	process.ZTagProbe *
-	(process.ZTagProbeME42 + process.ZTagProbeME42With3Of4 + process.ZTagProbeNoME42 + process.ZTagProbeME42Eta + process.ZTagProbeME42With3Of4Eta + process.ZTagProbeNoME42Eta + process.ZTagProbeME42Phi + process.ZTagProbeME42With3Of4Phi + process.ZTagProbeNoME42Phi) *
-	process.tagAndProbeTree * 
-	(process.tagAndProbeTreeME42 + process.tagAndProbeTreeME42With3Of4 + process.tagAndProbeTreeNoME42 + process.tagAndProbeTreeME42Eta + process.tagAndProbeTreeME42With3Of4Eta + process.tagAndProbeTreeNoME42Eta + process.tagAndProbeTreeME42Phi + process.tagAndProbeTreeME42With3Of4Phi + process.tagAndProbeTreeNoME42Phi) 
+	process.tagMuons
+	* process.probeMuons
+#	* (process.probeMuonsME42 + process.probeMuonsME42With3Of4 + process.probeMuonsNoME42 + process.probeMuonsME42Eta + process.probeMuonsME42With3Of4Eta + process.probeMuonsNoME42Eta + process.probeMuonsME42Phi + process.probeMuonsME42With3Of4Phi + process.probeMuonsNoME42Phi)
+	* (process.probeMuonsME42Eta + process.probeMuonsME42Phi)
+	* process.ZTagProbe
+#	* (process.ZTagProbeME42 + process.ZTagProbeME42With3Of4 + process.ZTagProbeNoME42 + process.ZTagProbeME42Eta + process.ZTagProbeME42With3Of4Eta + process.ZTagProbeNoME42Eta + process.ZTagProbeME42Phi + process.ZTagProbeME42With3Of4Phi + process.ZTagProbeNoME42Phi)
+	* (process.ZTagProbeME42Eta + process.ZTagProbeME42Phi)
+        * process.ME42MuonCands
+	* process.tagAndProbeTree
+#	* (process.tagAndProbeTreeME42 + process.tagAndProbeTreeME42With3Of4 + process.tagAndProbeTreeNoME42 + process.tagAndProbeTreeME42Eta + process.tagAndProbeTreeME42With3Of4Eta + process.tagAndProbeTreeNoME42Eta + process.tagAndProbeTreeME42Phi + process.tagAndProbeTreeME42With3Of4Phi + process.tagAndProbeTreeNoME42Phi) 
+	* (process.tagAndProbeTreeME42Eta + process.tagAndProbeTreeME42Phi)
 )
 
 ###
