@@ -34,6 +34,11 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+
+#include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 #include "TMath.h"
 
@@ -59,7 +64,8 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
-      virtual bool isME42(reco::TrackRef);
+      virtual bool isME42(reco::TrackRef, TransientTrackBuilder);
+      virtual bool isME42(GlobalPoint);
       // ----------member data ---------------------------
       edm::InputTag muons_;
 };
@@ -130,16 +136,22 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    iSetup.get<SetupRecord>().get(pSetup);
 */
 
+   // Handles to physics objects
    Handle<reco::MuonCollection> muons;
    iEvent.getByLabel(muons_,muons);
 
+   // handle to transient track builder
+   edm::ESHandle<TransientTrackBuilder> transTrackBuilder;
+   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",transTrackBuilder);
+
+   // vector to store outputs
    std::vector<float> output;
    output.reserve(muons->size());
 
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
       if (muon->isStandAloneMuon()) {
          reco::TrackRef track = muon->outerTrack();
-         output.push_back(isME42(track));
+         output.push_back(isME42(track,*transTrackBuilder));
       }
       else { output.push_back(0); }
    }
@@ -155,10 +167,31 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
 // ------------ method to determine if muon is in ME4/2 region ---------
 bool
-MuonME42CandidateProducer::isME42(reco::TrackRef track)
+MuonME42CandidateProducer::isME42(reco::TrackRef track, TransientTrackBuilder builder)
 {
-   return (track->outerEta()>1.2 && track->outerEta()<1.8 
-      && track->outerPhi()>75.*TMath::Pi()/180. && track->outerPhi()<125.*TMath::Pi()/180.);
+   // build transient track
+   reco::TransientTrack transTrack = builder.build(track);
+   // create global point in center of ME42 region
+   // get geometry 
+   edm::ESHandle<GlobalTrackingGeometry> theGeometry = builder.trackingGeometry();
+   // create DetID for ME+4/2
+   std::vector<CSCDetId> ME42Chambers;
+   ME42Chambers.reserve(5);
+   for (int id=8; id<13; id++) { ME42Chambers.push_back(CSCDetId(1,4,2,id)); }
+   GlobalPoint point(1.0,1.0,1.0);
+   // get track position closest to point (in 3d space?)
+   TrajectoryStateClosestToPoint trajectory = transTrack.trajectoryStateClosestToPoint(point);
+   // check if point is in ME42 region
+   return isME42(trajectory.position());
+}
+
+// ------------ method to determine if global point in ME4/2 region ------------
+bool
+MuonME42CandidateProducer::isME42(GlobalPoint point)
+{
+   return (point.phi()>75.*TMath::Pi()/180. &&
+           point.phi()<125.*TMath::Pi()/180. &&
+           point.eta()>1.2 && point.eta()<1.8);
 }
 
 // ------------ method called once each job just before starting event loop  ------------

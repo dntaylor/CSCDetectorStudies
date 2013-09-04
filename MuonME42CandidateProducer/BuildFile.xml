@@ -2,8 +2,11 @@
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/MuonReco" />
+<use name="DataFormats/MuonDetId"/>
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="PhysicsTools/Utilities"/>
+<use name="TrackingTools/TransientTrack"/>
+<use name="TrackingTools/Records"/>
 <use name="root"/>
 <use name="rootcore"/>
 <flags EDM_PLUGIN="1"/>

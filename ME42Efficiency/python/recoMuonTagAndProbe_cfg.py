@@ -1,5 +1,4 @@
 import FWCore.ParameterSet.Config as cms
-from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 
 ###
 # User configurable parameters
@@ -60,6 +59,8 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.GlobalTag.globaltag = GLOBALTAG
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.options = cms.untracked.PSet( 
 	wantSummary = cms.untracked.bool(True),
 #	SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -71,7 +72,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-#		'file:SingleMu_Run2012A_RECO.root'
+		'file:SingleMu_Run2012A_RECO.root'
 	)
 )
 
