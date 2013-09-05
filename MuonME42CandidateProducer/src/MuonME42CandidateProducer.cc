@@ -35,6 +35,8 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/MuonDetId/interface/DTChamberId.h"
+#include "DataFormats/MuonDetId/interface/RPCDetId.h"
 
 #include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -66,6 +68,8 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 
       virtual bool isME42(reco::TrackRef, TransientTrackBuilder);
       virtual bool isME42(GlobalPoint);
+      virtual bool isCSCDetId(DetId);
+      virtual bool wantOutput(DetId);
       // ----------member data ---------------------------
       edm::InputTag muons_;
 };
@@ -151,6 +155,13 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
       if (muon->isStandAloneMuon()) {
          reco::TrackRef track = muon->outerTrack();
+         if (wantOutput(track->outerDetId())) {
+            std::cout << "------------------------------" << std::endl;
+            std::cout << (CSCDetId)track->outerDetId() << std::endl;
+            std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
+            std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
+            std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
+         }
          output.push_back(isME42(track,*transTrackBuilder));
       }
       else { output.push_back(0); }
@@ -178,11 +189,17 @@ MuonME42CandidateProducer::isME42(reco::TrackRef track, TransientTrackBuilder bu
    std::vector<CSCDetId> ME42Chambers;
    ME42Chambers.reserve(5);
    for (int id=8; id<13; id++) { ME42Chambers.push_back(CSCDetId(1,4,2,id)); }
-   GlobalPoint point(1.0,1.0,1.0);
+   GlobalPoint center(0.0,530.0,1012.0);
    // get track position closest to point (in 3d space?)
-   TrajectoryStateClosestToPoint trajectory = transTrack.trajectoryStateClosestToPoint(point);
+   TrajectoryStateClosestToPoint trajectory = transTrack.trajectoryStateClosestToPoint(center);
+   GlobalPoint point = trajectory.position();
+   if (wantOutput(track->outerDetId())) {
+      std::cout << "GlobalPoint:" << std::endl;
+      std::cout << "eta: " << point.eta() << " phi: " << point.phi() << std::endl;
+      std::cout << "x: " << point.x() << " y: " << point.y() << " z: " << point.z() << std::endl;
+   }
    // check if point is in ME42 region
-   return isME42(trajectory.position());
+   return isME42(point);
 }
 
 // ------------ method to determine if global point in ME4/2 region ------------
@@ -192,6 +209,26 @@ MuonME42CandidateProducer::isME42(GlobalPoint point)
    return (point.phi()>75.*TMath::Pi()/180. &&
            point.phi()<125.*TMath::Pi()/180. &&
            point.eta()>1.2 && point.eta()<1.8);
+}
+
+// ------------ method to determine if DetId is CSCDetId -----------------
+bool
+MuonME42CandidateProducer::isCSCDetId(DetId id)
+{
+   DetId::Detector det = id.det();
+   int subdet = id.subdetId();
+   return (det==2 && subdet==2);
+}
+
+// ------------ method to decide to output properties ------------------
+bool
+MuonME42CandidateProducer::wantOutput(DetId id)
+{
+   if (isCSCDetId(id)) {
+      CSCDetId cscId = (CSCDetId)id;
+      return (cscId.endcap()==1 && cscId.station()==4 && cscId.ring()==2);
+   }
+   return 0;
 }
 
 // ------------ method called once each job just before starting event loop  ------------
