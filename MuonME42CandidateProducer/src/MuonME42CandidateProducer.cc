@@ -37,6 +37,7 @@
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
 #include "DataFormats/MuonDetId/interface/DTChamberId.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
+#include "DataFormats/TrackReco/interface/HitPattern.h"
 
 #include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
@@ -67,9 +68,12 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
       virtual bool isME42(reco::TrackRef, TransientTrackBuilder);
+      virtual bool isME42(reco::TrackRef);
       virtual bool isME42(GlobalPoint);
+      virtual bool isME42Alt(reco::TrackRef);
       virtual bool isCSCDetId(DetId);
       virtual bool wantOutput(DetId);
+      virtual void outputDetId(DetId);
       // ----------member data ---------------------------
       edm::InputTag muons_;
 };
@@ -155,14 +159,17 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
       if (muon->isStandAloneMuon()) {
          reco::TrackRef track = muon->outerTrack();
-         if (wantOutput(track->outerDetId())) {
+         output.push_back(isME42(track));
+         //if (wantOutput(track->outerDetId())) {
+         if (output.back() || isME42Alt(track)) {
             std::cout << "------------------------------" << std::endl;
-            std::cout << (CSCDetId)track->outerDetId() << std::endl;
+            outputDetId(track->outerDetId());
+            std::cout << std::endl;
             std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
             std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
             std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
+            std::cout << "isME42 output: " << output.back() << " isME42Alt output: " << isME42Alt(track) << std::endl;
          }
-         output.push_back(isME42(track,*transTrackBuilder));
       }
       else { output.push_back(0); }
    }
@@ -174,6 +181,50 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    filler.fill();
    iEvent.put(valMap);
  
+}
+
+// ------------ method to output detid regardless of type ---------------
+void 
+MuonME42CandidateProducer::outputDetId(DetId id)
+{
+   DetId::Detector det = id.det();
+   int subdet = id.subdetId();
+   if (det==2 && subdet==1) {
+      std::cout << (DTChamberId)id << std::endl;
+   }
+   else if (det==2 && subdet==2) {
+      std::cout << (CSCDetId)id << std::endl;
+   }
+   else if (det==2 && subdet==3) {
+      std::cout << (RPCDetId)id << std::endl;
+   }
+}
+
+// ------------ method to determine if muon is in ME4/2 region with hitpatter --------
+bool
+MuonME42CandidateProducer::isME42(reco::TrackRef track)
+{
+   // Hit pattern structure
+   // - consists of a 10 bit uint32
+   // bit # | val  | meaning
+   // 10    | 0    | muon (0)
+   // 9-7   | 010  | CSC (2)
+   // 6-3   | 1101 | 4*(station-1)+(ring-1) (ME4/2: 13)
+   // 2     |      | rphi/stereo (0/1)
+   // 1-0   |      | valid/missing/inactive/bad (0/1/2/3)
+   reco::HitPattern hp = track->hitPattern();
+   // we want to iterate over patterns, and check if it is an ME4/2
+   int result = 0;
+   int numMissing = 0;
+   for (int i = 0; i<hp.numberOfHits(); i++) {
+      uint32_t pattern = hp.getHitPattern(i);
+      if (hp.muonCSCHitFilter(pattern)) {
+         if (hp.type_2_HitFilter(pattern)) { numMissing++; }
+         if (hp.getMuonStation(pattern)==4 && hp.getCSCRing(pattern)==2) { result = 1; }
+      }
+   }
+   std::cout << "Number muon missing: " << numMissing << std::endl;
+   return result;
 }
 
 // ------------ method to determine if muon is in ME4/2 region ---------
@@ -209,6 +260,15 @@ MuonME42CandidateProducer::isME42(GlobalPoint point)
    return (point.phi()>75.*TMath::Pi()/180. &&
            point.phi()<125.*TMath::Pi()/180. &&
            point.eta()>1.2 && point.eta()<1.8);
+}
+
+// ------------ method to see if track in ME4/2 region ------------
+bool
+MuonME42CandidateProducer::isME42Alt(reco::TrackRef track)
+{
+   return (track->outerPhi()>75.*TMath::Pi()/180. &&
+           track->outerPhi()<125.*TMath::Pi()/180. &&
+           track->outerEta()>1.2 && track->outerEta()<1.8);
 }
 
 // ------------ method to determine if DetId is CSCDetId -----------------
