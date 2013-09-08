@@ -42,6 +42,15 @@
 #include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/PatternTools/interface/Trajectory.h"
+#include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+
+#include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
+#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
+#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
+#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
+#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
 
 #include "TMath.h"
 
@@ -69,6 +78,7 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 
       virtual bool isME42(reco::TrackRef, TransientTrackBuilder);
       virtual bool isME42(reco::TrackRef);
+      virtual bool isME42HitPattern(reco::TrackRef);
       virtual bool isME42(GlobalPoint);
       virtual bool isME42Alt(reco::TrackRef);
       virtual bool isCSCDetId(DetId);
@@ -76,6 +86,16 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void outputDetId(DetId);
       // ----------member data ---------------------------
       edm::InputTag muons_;
+      edm::ParameterSet serviceProxyParameters_;
+      edm::ParameterSet refitterParameters_;
+      //edm::ParameterSet trackLoaderParameters_;
+      //edm::ParameterSet trajectoryBuilderParameters_;
+
+      MuonServiceProxy* muonService_;
+      StandAloneMuonRefitter* refitter_;
+      //MuonTrackLoader* trackLoader_;
+      //MuonTrajectoryBuilder* trajectoryBuilder_;
+      //MuonTrackFinder* trackFinder_;
 };
 
 //
@@ -91,7 +111,11 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 // constructors and destructor
 //
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
-   muons_(iConfig.getParameter<edm::InputTag>("src"))
+   muons_(iConfig.getParameter<edm::InputTag>("src")),
+   serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters"))
+   //refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
+   //trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
+   //trajectoryBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
 /* Examples
@@ -105,7 +129,11 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
 */
    produces<edm::ValueMap<float>>();
    //now do what ever other initialization is needed
-  
+   muonService_ = new MuonServiceProxy(serviceProxyParameters_);
+   //trackLoader_ = new MuonTrackLoader(trackLoaderParameters_, muonService_);
+   //trajectoryBuilder_ = new StandAloneMuonTrajectoryBuilder(trajectoryBuilderParameters_, muonService_);
+   //trackFinder_ = new MuonTrackFinder(trajectoryBuilder_, trackLoader_);
+   refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
 }
 
 
@@ -152,6 +180,9 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    edm::ESHandle<TransientTrackBuilder> transTrackBuilder;
    iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",transTrackBuilder);
 
+   // update muon service
+   muonService_->update(iSetup);
+
    // vector to store outputs
    std::vector<float> output;
    output.reserve(muons->size());
@@ -160,15 +191,16 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       if (muon->isStandAloneMuon()) {
          reco::TrackRef track = muon->outerTrack();
          output.push_back(isME42(track));
+         bool isME42Hp = isME42HitPattern(track);
          //if (wantOutput(track->outerDetId())) {
-         if (output.back() || isME42Alt(track)) {
+         if (output.back() || isME42Alt(track) || isME42Hp) {
             std::cout << "------------------------------" << std::endl;
             outputDetId(track->outerDetId());
             std::cout << std::endl;
             std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
             std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
             std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
-            std::cout << "isME42 output: " << output.back() << " isME42Alt output: " << isME42Alt(track) << std::endl;
+            std::cout << "isME42: " << output.back() << " isME42Alt: " << isME42Alt(track) << " isME42Hp: " << isME42Hp << std::endl;
          }
       }
       else { output.push_back(0); }
@@ -200,9 +232,34 @@ MuonME42CandidateProducer::outputDetId(DetId id)
    }
 }
 
-// ------------ method to determine if muon is in ME4/2 region with hitpatter --------
+// ------------ method to determing if muon in ME4/2 with trajectory ----------
 bool
 MuonME42CandidateProducer::isME42(reco::TrackRef track)
+{
+   // take seed trajectory
+   //Trajectory seedTraj(*(track->seedRef()),track->seedDirection());
+   Trajectory seedTraj(*(track->seedRef()));
+   // reun refit
+   std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
+   if (refitResult.first) {
+      Trajectory traj = refitResult.second;
+      // get last measurement in trajectory
+      TrajectoryMeasurement lastMeas = traj.lastMeasurement();
+      // get forward predicted state from this measurement
+      TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
+      // get global point of forward predicted state
+      GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
+      // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
+      //if (fwdGlobalPoint.z()>1012.0) {  }
+      //else {  }
+      return isME42(fwdGlobalPoint);
+   }
+   return 0;
+}
+
+// ------------ method to determine if muon is in ME4/2 region with hitpatter --------
+bool
+MuonME42CandidateProducer::isME42HitPattern(reco::TrackRef track)
 {
    // Hit pattern structure
    // - consists of a 10 bit uint32

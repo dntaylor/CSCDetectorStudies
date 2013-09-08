@@ -54,6 +54,7 @@ ZMASSCUT = "60.0 < mass < 120.0"
 # includes
 ###
 process = cms.Process("TagProbe")
+process.load("Configuration.StandardSequences.Services_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.GlobalTag.globaltag = GLOBALTAG
@@ -61,6 +62,11 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
 process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load('Configuration/StandardSequences/Reconstruction_cff')
+process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
+###
+# options
+###
 process.options = cms.untracked.PSet( 
 	wantSummary = cms.untracked.bool(True),
 #	SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -126,8 +132,21 @@ process.ZTagProbeME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuons
 ###
 # custom variables
 ###
+from RecoMuon.StandAloneMuonProducer.standAloneMuons_cff import *
+#from RecoMuon.TrackingTools.MuonServiceProxy_cff import *
+#from RecoMuon.TrackingTools.MuonTrackLoader_cff import *
 process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
+#	MuonTrackLoaderForSTA,
+	MuonServiceProxy,
+#	STATrajBuilderParameters = standAloneMuons.STATrajBuilderParameters,
 	src = cms.InputTag(PROBEMUONCOLLECTION),
+	RefitterParameters = cms.PSet(
+		FitterName = cms.string('KFFitterSmootherSTA'),
+		NumberOfIterations = cms.uint32(3),
+		ForceAllIterations = cms.bool(False),
+		MaxFractionOfLostHits = cms.double(0.05),
+		RescaleError = cms.double(100.)
+	)
 )
 
 ###
