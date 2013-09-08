@@ -44,7 +44,10 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
+#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
+#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
 #include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
+#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
 
 #include "TMath.h"
 
@@ -81,9 +84,14 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       edm::InputTag muons_;
       edm::ParameterSet serviceProxyParameters_;
       edm::ParameterSet refitterParameters_;
+      edm::ParameterSet trackLoaderParameters_;
+      edm::ParameterSet trajectoryBuilderParameters_;
 
       MuonServiceProxy* muonService_;
       StandAloneMuonRefitter* refitter_;
+      MuonTrackLoader* trackLoader_;
+      MuonTrajectoryBuilder* trajectoryBuilder_;
+      MuonTrackFinder* trackFinder_;
 };
 
 //
@@ -101,7 +109,9 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
    muons_(iConfig.getParameter<edm::InputTag>("src")),
    serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
-   refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters"))
+   refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
+   trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
+   trajectoryBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
 /* Examples
@@ -117,6 +127,9 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    //now do what ever other initialization is needed
    muonService_ = new MuonServiceProxy(serviceProxyParameters_);
    refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
+   trackLoader_ = new MuonTrackLoader(trackLoaderParameters_, muonService_);
+   trajectoryBuilder_ = new StandAloneMuonTrajectoryBuilder(trajectoryBuilderParameters_, muonService_);
+   trackFinder_ = new MuonTrackFinder(trajectoryBuilder_, trackLoader_);
 }
 
 
@@ -156,11 +169,15 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 */
 
    // Handles to physics objects
+   std::cout << "getting physics objects" << std::endl;
    Handle<reco::MuonCollection> muons;
    iEvent.getByLabel(muons_,muons);
 
    // update muon service
+   std::cout << "updating muon service" << std::endl;
    muonService_->update(iSetup);
+   std::cout << "setting event in traj builder" << std::endl;
+   trajectoryBuilder_->setEvent(iEvent);
 
    // vector to store outputs
    std::vector<float> output;
@@ -217,23 +234,34 @@ MuonME42CandidateProducer::isME42(reco::TrackRef track)
 {
    // take seed trajectory
    //Trajectory seedTraj(*(track->seedRef()),track->seedDirection());
-   Trajectory seedTraj(*(track->seedRef()));
+   //Trajectory seedTraj(*(track->seedRef()));
    // reun refit
-   std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
-   if (refitResult.first) {
-      Trajectory traj = refitResult.second;
-      // get last measurement in trajectory
-      TrajectoryMeasurement lastMeas = traj.lastMeasurement();
-      // get forward predicted state from this measurement
-      TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
-      // get global point of forward predicted state
-      GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
-      // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
-      //if (fwdGlobalPoint.z()>1012.0) {  }
-      //else {  }
-      return isME42(fwdGlobalPoint);
-   }
-   return 0;
+   //std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
+   // run trajectorBuilder
+   std::cout << "building trajectories" << std::endl;
+   std::vector<Trajectory*> trajs = trajectoryBuilder_->trajectories(*(track->seedRef()));
+   //if (refitResult.first) {
+   //Trajectory traj = refitResult.second;
+   // iterate over trajectories
+   std::cout << "getting trajectories" << std::endl;
+   if (trajs.size()==0) return 0;
+   Trajectory* traj = trajs[0];
+   // get last measurement in trajectory
+   std::cout << "get last measurement" << std::endl;
+   TrajectoryMeasurement lastMeas = traj->lastMeasurement();
+   // get forward predicted state from this measurement
+   std::cout << "get TSOS" << std::endl;
+   TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
+   // get global point of forward predicted state
+   std::cout << "get global point" << std::endl;
+   GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
+   // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
+   //if (fwdGlobalPoint.z()>1012.0) {  }
+   //else {  }
+   std::cout << "check is ME42" << std::endl;
+   return isME42(fwdGlobalPoint);
+   //}
+   //return 0;
 }
 
 // ------------ method to determine if muon is in ME4/2 region with hitpatter --------

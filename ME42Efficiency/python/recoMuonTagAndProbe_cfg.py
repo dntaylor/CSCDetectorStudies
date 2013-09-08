@@ -133,11 +133,13 @@ process.ZTagProbeME42Phi = process.ZTagProbe.clone( decay = cms.string("tagMuons
 # custom variables
 ###
 from RecoMuon.StandAloneMuonProducer.standAloneMuons_cff import *
-#from RecoMuon.TrackingTools.MuonServiceProxy_cff import *
-#from RecoMuon.TrackingTools.MuonTrackLoader_cff import *
+refittedStandAloneMuons = standAloneMuons.clone()
+refittedStandAloneMuons.STATrajBuilderParameters.DoRefit = True
 process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
 	MuonServiceProxy,
+	MuonTrackLoaderForSTA,
 	src = cms.InputTag(PROBEMUONCOLLECTION),
+	STATrajBuilderParameters = refittedStandAloneMuons.STATrajBuilderParameters,
 	RefitterParameters = cms.PSet(
 		FitterName = cms.string('KFFitterSmootherSTA'),
 		NumberOfIterations = cms.uint32(3),
