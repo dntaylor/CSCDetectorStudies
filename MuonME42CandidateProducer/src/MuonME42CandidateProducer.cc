@@ -39,18 +39,12 @@
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
 
-#include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
-#include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 #include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
-#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
-#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
-#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
 
 #include "TMath.h"
 
@@ -76,7 +70,6 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
-      virtual bool isME42(reco::TrackRef, TransientTrackBuilder);
       virtual bool isME42(reco::TrackRef);
       virtual bool isME42HitPattern(reco::TrackRef);
       virtual bool isME42(GlobalPoint);
@@ -88,14 +81,9 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       edm::InputTag muons_;
       edm::ParameterSet serviceProxyParameters_;
       edm::ParameterSet refitterParameters_;
-      //edm::ParameterSet trackLoaderParameters_;
-      //edm::ParameterSet trajectoryBuilderParameters_;
 
       MuonServiceProxy* muonService_;
       StandAloneMuonRefitter* refitter_;
-      //MuonTrackLoader* trackLoader_;
-      //MuonTrajectoryBuilder* trajectoryBuilder_;
-      //MuonTrackFinder* trackFinder_;
 };
 
 //
@@ -113,9 +101,6 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
    muons_(iConfig.getParameter<edm::InputTag>("src")),
    serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters"))
-   //refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
-   //trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
-   //trajectoryBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
 /* Examples
@@ -130,9 +115,6 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    produces<edm::ValueMap<float>>();
    //now do what ever other initialization is needed
    muonService_ = new MuonServiceProxy(serviceProxyParameters_);
-   //trackLoader_ = new MuonTrackLoader(trackLoaderParameters_, muonService_);
-   //trajectoryBuilder_ = new StandAloneMuonTrajectoryBuilder(trajectoryBuilderParameters_, muonService_);
-   //trackFinder_ = new MuonTrackFinder(trajectoryBuilder_, trackLoader_);
    refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
 }
 
@@ -175,10 +157,6 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    // Handles to physics objects
    Handle<reco::MuonCollection> muons;
    iEvent.getByLabel(muons_,muons);
-
-   // handle to transient track builder
-   edm::ESHandle<TransientTrackBuilder> transTrackBuilder;
-   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",transTrackBuilder);
 
    // update muon service
    muonService_->update(iSetup);
@@ -282,32 +260,6 @@ MuonME42CandidateProducer::isME42HitPattern(reco::TrackRef track)
    }
    std::cout << "Number muon missing: " << numMissing << std::endl;
    return result;
-}
-
-// ------------ method to determine if muon is in ME4/2 region ---------
-bool
-MuonME42CandidateProducer::isME42(reco::TrackRef track, TransientTrackBuilder builder)
-{
-   // build transient track
-   reco::TransientTrack transTrack = builder.build(track);
-   // create global point in center of ME42 region
-   // get geometry 
-   edm::ESHandle<GlobalTrackingGeometry> theGeometry = builder.trackingGeometry();
-   // create DetID for ME+4/2
-   std::vector<CSCDetId> ME42Chambers;
-   ME42Chambers.reserve(5);
-   for (int id=8; id<13; id++) { ME42Chambers.push_back(CSCDetId(1,4,2,id)); }
-   GlobalPoint center(0.0,530.0,1012.0);
-   // get track position closest to point (in 3d space?)
-   TrajectoryStateClosestToPoint trajectory = transTrack.trajectoryStateClosestToPoint(center);
-   GlobalPoint point = trajectory.position();
-   if (wantOutput(track->outerDetId())) {
-      std::cout << "GlobalPoint:" << std::endl;
-      std::cout << "eta: " << point.eta() << " phi: " << point.phi() << std::endl;
-      std::cout << "x: " << point.x() << " y: " << point.y() << " z: " << point.z() << std::endl;
-   }
-   // check if point is in ME42 region
-   return isME42(point);
 }
 
 // ------------ method to determine if global point in ME4/2 region ------------
