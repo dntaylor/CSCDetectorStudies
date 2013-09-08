@@ -100,7 +100,8 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 //
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
    muons_(iConfig.getParameter<edm::InputTag>("src")),
-   serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters"))
+   serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
+   refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters"))
 {
    //register your products
 /* Examples

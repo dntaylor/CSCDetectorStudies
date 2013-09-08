@@ -136,9 +136,7 @@ from RecoMuon.StandAloneMuonProducer.standAloneMuons_cff import *
 #from RecoMuon.TrackingTools.MuonServiceProxy_cff import *
 #from RecoMuon.TrackingTools.MuonTrackLoader_cff import *
 process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
-#	MuonTrackLoaderForSTA,
 	MuonServiceProxy,
-#	STATrajBuilderParameters = standAloneMuons.STATrajBuilderParameters,
 	src = cms.InputTag(PROBEMUONCOLLECTION),
 	RefitterParameters = cms.PSet(
 		FitterName = cms.string('KFFitterSmootherSTA'),
