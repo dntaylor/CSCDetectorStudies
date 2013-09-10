@@ -138,7 +138,8 @@ refittedStandAloneMuons.STATrajBuilderParameters.DoRefit = True
 process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
 	MuonServiceProxy,
 	MuonTrackLoaderForSTA,
-	src = cms.InputTag(PROBEMUONCOLLECTION),
+	MuonCollection = cms.InputTag(PROBEMUONCOLLECTION),
+	VertexCollection = cms.InputTag("offlinePrimaryVertices"),
 	STATrajBuilderParameters = refittedStandAloneMuons.STATrajBuilderParameters,
 	RefitterParameters = cms.PSet(
 		FitterName = cms.string('KFFitterSmootherSTA'),

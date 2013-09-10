@@ -38,6 +38,7 @@
 #include "DataFormats/MuonDetId/interface/DTChamberId.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
@@ -82,6 +83,7 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void outputDetId(DetId);
       // ----------member data ---------------------------
       edm::InputTag muons_;
+      edm::InputTag vertices_;
       edm::ParameterSet serviceProxyParameters_;
       edm::ParameterSet refitterParameters_;
       edm::ParameterSet trackLoaderParameters_;
@@ -107,7 +109,8 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 // constructors and destructor
 //
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
-   muons_(iConfig.getParameter<edm::InputTag>("src")),
+   muons_(iConfig.getParameter<edm::InputTag>("MuonCollection")),
+   vertices_(iConfig.getParameter<edm::InputTag>("VertexCollection")),
    serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
    refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
    trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
@@ -123,7 +126,9 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    //if you want to put into the Run
    produces<ExampleData2,InRun>();
 */
-   produces<edm::ValueMap<float>>();
+   produces<edm::ValueMap<float>>("isME42");
+   produces<edm::ValueMap<bool>>("isTightMuon");
+   produces<edm::ValueMap<bool>>("isLooseMuon");
    //now do what ever other initialization is needed
    //muonService_ = new MuonServiceProxy(serviceProxyParameters_);
    //refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
@@ -168,18 +173,26 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    // Handles to physics objects
    Handle<reco::MuonCollection> muons;
    iEvent.getByLabel(muons_,muons);
+   Handle<reco::Vertex> vertex;
+   iEvent.getByLabel(vertices_,vertex);
 
    // update muon service
    //muonService_->update(iSetup);
 
    // vector to store outputs
-   std::vector<float> output;
-   output.reserve(muons->size());
+   std::vector<float> outputME42;
+   outputME42.reserve(muons->size());
+   std::vector<bool> outputTight;
+   outputTight.reserve(muons->size());
+   std::vector<bool> outputLoose;
+   outputLoose.reserve(muons->size());
 
    for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
+      outputTight.push_back(muon::isTightMuon(*muon,*vertex));
+      outputLoose.push_back(muon::isLooseMuon(*muon));
       if (muon->isStandAloneMuon()) {
          reco::TrackRef track = muon->outerTrack();
-         output.push_back(isME42Alt(track));
+         outputME42.push_back(isME42Alt(track));
          //bool isME42Hp = isME42HitPattern(track);
          //if (wantOutput(track->outerDetId())) {
          //if (output.back() || isME42Alt(track) || isME42Hp) {
@@ -192,16 +205,27 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
          //   std::cout << "isME42: " << output.back() << " isME42Alt: " << isME42Alt(track) << " isME42Hp: " << isME42Hp << std::endl;
          //}
       }
-      else { output.push_back(0); }
+      else { outputME42.push_back(0); }
    }
 
    // convert to ValueMap and store
-   std::auto_ptr<ValueMap<float> > valMap(new ValueMap<float>());
-   ValueMap<float>::Filler filler(*valMap);
-   filler.insert(muons, output.begin(), output.end());
-   filler.fill();
-   iEvent.put(valMap);
+   std::auto_ptr<ValueMap<float> > valMapME42(new ValueMap<float>());
+   ValueMap<float>::Filler fillerME42(*valMapME42);
+   fillerME42.insert(muons, outputME42.begin(), outputME42.end());
+   fillerME42.fill();
+   iEvent.put(valMapME42);
  
+   std::auto_ptr<ValueMap<bool> > valMapTight(new ValueMap<bool>());
+   ValueMap<bool>::Filler fillerTight(*valMapTight);
+   fillerTight.insert(muons, outputTight.begin(), outputTight.end());
+   fillerTight.fill();
+   iEvent.put(valMapTight);
+
+   std::auto_ptr<ValueMap<bool> > valMapLoose(new ValueMap<bool>());
+   ValueMap<bool>::Filler fillerLoose(*valMapLoose);
+   fillerLoose.insert(muons, outputLoose.begin(), outputLoose.end());
+   fillerLoose.fill();
+   iEvent.put(valMapLoose);
 }
 
 // ------------ method to output detid regardless of type ---------------
