@@ -103,7 +103,6 @@ class CSCAnalyzer : public edm::EDAnalyzer {
       edm::InputTag cscSegTag;
       edm::InputTag saMuonTag;
       edm::InputTag l1aTag;
-      edm::InputTag simHitTag;
       edm::InputTag alctDigiTag;
       edm::InputTag clctDigiTag;
       edm::InputTag corrlctDigiTag;

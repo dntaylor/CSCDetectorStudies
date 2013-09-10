@@ -17,7 +17,6 @@ CSCAnalyzer::CSCAnalyzer(const edm::ParameterSet& iConfig)
    cscSegTag     = iConfig.getParameter<edm::InputTag>("cscSegTag");
    saMuonTag     = iConfig.getParameter<edm::InputTag>("saMuonTag");
    l1aTag        = iConfig.getParameter<edm::InputTag>("l1aTag");
-   simHitTag     = iConfig.getParameter<edm::InputTag>("simHitTag");
    hltTag        = iConfig.getParameter<edm::InputTag>("hltTag");
 
 }
