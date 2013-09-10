@@ -56,6 +56,10 @@ process.lctreader = cms.EDAnalyzer("CSCTriggerPrimitivesReader",
     CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
 )
 
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string('TPEHists.root')
+)
+
 
 process.p = cms.Path(
     process.gtDigis 
