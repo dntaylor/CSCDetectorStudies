@@ -13,7 +13,18 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.demo = cms.EDAnalyzer('CSCAnalyzer'
+process.demo = cms.EDAnalyzer('CSCAnalyzer',
+    alctDigiTag = cms.InputTag("muonCSCDigis","MuonCSCALCTDigi"),
+    clctDigiTag = cms.InputTag("muonCSCDigis","MuonCSCCLCTDigi"),
+    corrlctDigiTag = cms.InputTag("muonCSCDigis","MuonCSCCorrelatedLCTDigi"),
+    stripDigiTag = cms.InputTag("muonCSCDigis","MuonCSCStripDigi"),
+    wireDigiTag = cms.InputTag("muonCSCDigis","MuonCSCWireDigi"),
+    compDigiTag = cms.InputTag("muonCSCDigis","MuonCSCComparatorDigi"),
+    cscRecHitTag = cms.InputTag("csc2DRecHits"),
+    cscSegTag = cms.InputTag("cscSegments"),
+    saMuonTag = cms.InputTag("standAloneMuons"),
+    l1aTag = cms.InputTag("gtDigis"),
+    hltTag = cms.InputTag("TriggerResults::HLT"),
 )
 
 

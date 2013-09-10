@@ -1,66 +1,4 @@
-// -*- C++ -*-
-//
-// Package:    CSCAnalyzer
-// Class:      CSCAnalyzer
-// 
-/**\class CSCAnalyzer CSCAnalyzer.cc CSCDetectorStudies/CSCAnalyzer/src/CSCAnalyzer.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Devin Taylor
-//         Created:  Mon Sep  9 19:32:22 CDT 2013
-// $Id$
-//
-//
-
-
-// system include files
-#include <memory>
-
-// user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-//
-// class declaration
-//
-
-class CSCAnalyzer : public edm::EDAnalyzer {
-   public:
-      explicit CSCAnalyzer(const edm::ParameterSet&);
-      ~CSCAnalyzer();
-
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
-
-   private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&);
-      virtual void endJob() ;
-
-      virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-      virtual void endRun(edm::Run const&, edm::EventSetup const&);
-      virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-      virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-
-      // ----------member data ---------------------------
-};
-
-//
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
+#include "CSCDetectorStudies/CSCAnalyzer/interface/CSCAnalyzer.h"
 
 //
 // constructors and destructor
@@ -69,6 +7,18 @@ CSCAnalyzer::CSCAnalyzer(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
+   stripDigiTag  = iConfig.getParameter<edm::InputTag>("stripDigiTag");
+   wireDigiTag   = iConfig.getParameter<edm::InputTag>("wireDigiTag");
+   compDigiTag   = iConfig.getParameter<edm::InputTag>("compDigiTag");
+   alctDigiTag   = iConfig.getParameter<edm::InputTag>("alctDigiTag") ;
+   clctDigiTag   = iConfig.getParameter<edm::InputTag>("clctDigiTag") ;
+   corrlctDigiTag= iConfig.getParameter<edm::InputTag>("corrlctDigiTag") ;
+   cscRecHitTag  = iConfig.getParameter<edm::InputTag>("cscRecHitTag");
+   cscSegTag     = iConfig.getParameter<edm::InputTag>("cscSegTag");
+   saMuonTag     = iConfig.getParameter<edm::InputTag>("saMuonTag");
+   l1aTag        = iConfig.getParameter<edm::InputTag>("l1aTag");
+   simHitTag     = iConfig.getParameter<edm::InputTag>("simHitTag");
+   hltTag        = iConfig.getParameter<edm::InputTag>("hltTag");
 
 }
 
@@ -92,17 +42,42 @@ CSCAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
 
+   // Get the Digis
+   edm::Handle<CSCWireDigiCollection> wires;
+   edm::Handle<CSCStripDigiCollection> strips;
+   edm::Handle<CSCComparatorDigiCollection> compars;
+   edm::Handle<CSCALCTDigiCollection> alcts;
+   edm::Handle<CSCCLCTDigiCollection> clcts;
+   edm::Handle<CSCCorrelatedLCTDigiCollection> correlatedlcts;
+   iEvent.getByLabel(stripDigiTag,strips);
+   iEvent.getByLabel(wireDigiTag,wires);
+   iEvent.getByLabel(compDigiTag,compars);
+   iEvent.getByLabel(alctDigiTag, alcts);
+   iEvent.getByLabel(clctDigiTag, clcts);
+   iEvent.getByLabel(corrlctDigiTag, correlatedlcts);
 
+   // Get the CSC Geometry :
+   ESHandle<CSCGeometry> cscGeom;
+   iSetup.get<MuonGeometryRecord>().get(cscGeom);
 
-#ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
-#endif
-   
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
-#endif
+   // Get the RecHits collection :
+   Handle<CSCRecHit2DCollection> recHits;
+   iEvent.getByLabel(cscRecHitTag,recHits);
+
+   // get CSC segment collection
+   Handle<CSCSegmentCollection> cscSegments;
+   iEvent.getByLabel(cscSegTag, cscSegments);
+
+   // get the trigger collection
+   edm::Handle<L1MuGMTReadoutCollection> pCollection;
+   iEvent.getByLabel(l1aTag,pCollection);
+
+   edm::Handle<TriggerResults> hlt;
+   iEvent.getByLabel(hltTag,hlt);
+
+   // get the standalone muon collection
+   Handle<reco::TrackCollection> saMuons;
+   iEvent.getByLabel(saMuonTag,saMuons);
 }
 
 
