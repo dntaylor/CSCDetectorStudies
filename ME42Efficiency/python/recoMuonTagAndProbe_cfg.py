@@ -30,7 +30,7 @@ TAGMUONCUT = MUONCUT + \
 PROBEMUONCUT = MUONCUT + \
 	" && isStandAloneMuon" #+ \
 #	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
-#	" && dxy(pv)<=0.2 && dz(pv)<=0.2"
+#	" && dxy(pv)<=0.2 && dz(pv)<=0.5"
 
 LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
 TIGHTMUON = "isPFMuon && isGlobalMuon" + \
@@ -140,6 +140,7 @@ process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
 	MuonTrackLoaderForSTA,
 	MuonCollection = cms.InputTag(PROBEMUONCOLLECTION),
 	VertexCollection = cms.InputTag("offlinePrimaryVertices"),
+	BeamSpot = cms.InputTag("offlineBeamSpot"),
 	STATrajBuilderParameters = refittedStandAloneMuons.STATrajBuilderParameters,
 	RefitterParameters = cms.PSet(
 		FitterName = cms.string('KFFitterSmootherSTA'),
@@ -161,11 +162,11 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 		eta = cms.string("eta"),
 		phi = cms.string("phi"),
 		# external variable
-		isME42 = cms.InputTag("ME42MuonCands"),
+		isME42 = cms.InputTag("ME42MuonCands","isME42"),
 	),
 	flags = cms.PSet(
-		passingTightMuon = cms.string(TIGHTMUON),
-		passingLooseMuon = cms.string(LOOSEMUON),
+		passingTightMuon = cms.InputTag("ME42MuonCands","isTightMuon"),
+		passingLooseMuon = cms.InputTag("ME42MuonCands","isLooseMuon"),
 	),
 	addRunLumiInfo = cms.bool(True),
 	isMC = cms.bool(MCFLAG),
