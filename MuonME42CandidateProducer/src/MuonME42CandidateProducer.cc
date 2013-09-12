@@ -89,6 +89,8 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       const reco::Vertex getPrimaryVertex(edm::Handle<reco::VertexCollection>&,edm::Handle<reco::BeamSpot>&);
       virtual bool isTightMuon(const reco::Muon&, const reco::Vertex&);
       virtual bool isLooseMuon(const reco::Muon&);
+      virtual bool isTagMuon(const reco::Muon&, const reco::Vertex&);
+      virtual bool isProbeMuon(const reco::Muon&, const reco::Vertex&);
       // ----------member data ---------------------------
       edm::InputTag muons_;
       edm::InputTag vertices_;
@@ -127,21 +129,14 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    trackBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
-/* Examples
-   produces<ExampleData2>();
-
-   //if do put with a label
-   produces<ExampleData2>("label");
- 
-   //if you want to put into the Run
-   produces<ExampleData2,InRun>();
-*/
    produces<edm::ValueMap<float>>("isME42");
    produces<edm::RefToBaseVector<reco::Muon>>("isTightMuon");
    produces<edm::RefToBaseVector<reco::Muon>>("isLooseMuon");
+   produces<reco::MuonCollection>("isTagMuon");
+   produces<reco::MuonCollection>("isProbeMuon");
    //now do what ever other initialization is needed
-   //muonService_ = new MuonServiceProxy(serviceProxyParameters_);
-   //refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
+   muonService_ = new MuonServiceProxy(serviceProxyParameters_);
+   refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
 }
 
 
@@ -175,42 +170,39 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    const reco::Vertex & vertex = getPrimaryVertex(vertices,beamspot);
 
    // update muon service
-   //muonService_->update(iSetup);
+   muonService_->update(iSetup);
 
    // vector to store outputs
    std::vector<float> outputME42;
    outputME42.reserve(muons->size());
    std::auto_ptr<RefToBaseVector<reco::Muon>> outputTight(new RefToBaseVector<reco::Muon>());
    std::auto_ptr<RefToBaseVector<reco::Muon>> outputLoose(new RefToBaseVector<reco::Muon>());
+   std::auto_ptr<reco::MuonCollection> outputTag(new reco::MuonCollection());
+   std::auto_ptr<reco::MuonCollection> outputProbe(new reco::MuonCollection());
 
-//   for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
-//      if (muon::isTightMuon(*muon,vertex)) outputTight->push_back(RefToBase<reco::Muon>(muon));
-//      if (muon::isLooseMuon(*muon)) outputLoose->push_back(RefToBase<reco::Muon>(muon));
-//      if (muon->isStandAloneMuon()) {
-//         reco::TrackRef track = muon->outerTrack();
-//         outputME42.push_back(isME42Alt(track));
-//         //bool isME42Hp = isME42HitPattern(track);
-//         //if (wantOutput(track->outerDetId())) {
-//         //if (output.back() || isME42Alt(track) || isME42Hp) {
-//         //   std::cout << "------------------------------" << std::endl;
-//         //   outputDetId(track->outerDetId());
-//         //   std::cout << std::endl;
-//         //   std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
-//         //   std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
-//         //   std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
-//         //   std::cout << "isME42: " << output.back() << " isME42Alt: " << isME42Alt(track) << " isME42Hp: " << isME42Hp << std::endl;
-//         //}
-//      }
-//      else { outputME42.push_back(0); }
-//   }
+         //bool isME42Hp = isME42HitPattern(track);
+         //if (wantOutput(track->outerDetId())) {
+         //if (output.back() || isME42Alt(track) || isME42Hp) {
+         //   std::cout << "------------------------------" << std::endl;
+         //   outputDetId(track->outerDetId());
+         //   std::cout << std::endl;
+         //   std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
+         //   std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
+         //   std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
+         //   std::cout << "isME42: " << output.back() << " isME42Alt: " << isME42Alt(track) << " isME42Hp: " << isME42Hp << std::endl;
+         //}
 
    for (size_t i = 0, n = muons->size(); i<n; ++i) {
       RefToBase<reco::Muon> muonRef = muons->refAt(i);
       const reco::Muon & muon = *muonRef;
+      // push variables
       if (isTightMuon(muon,vertex)) outputTight->push_back(muonRef);
       if (isLooseMuon(muon)) outputLoose->push_back(muonRef);
+      if (isTagMuon(muon,vertex)) outputTag->push_back(muon);
+      if (isProbeMuon(muon,vertex)) outputProbe->push_back(muon);
       if (muon.isStandAloneMuon()) {
          reco::TrackRef track = muon.outerTrack();
+         // SWITCH from isME42Alt to isME42 to try track refitter
          outputME42.push_back(isME42Alt(track));
       }
       else { outputME42.push_back(0); }
@@ -223,20 +215,10 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    fillerME42.fill();
    iEvent.put(valMapME42,"isME42");
  
-   //std::auto_ptr<ValueMap<bool> > valMapTight(new ValueMap<bool>());
-   //ValueMap<bool>::Filler fillerTight(*valMapTight);
-   //fillerTight.insert(muons, outputTight.begin(), outputTight.end());
-   //fillerTight.fill();
-   //iEvent.put(valMapTight,"isTightMuon");
-
-   //std::auto_ptr<ValueMap<bool> > valMapLoose(new ValueMap<bool>());
-   //ValueMap<bool>::Filler fillerLoose(*valMapLoose);
-   //fillerLoose.insert(muons, outputLoose.begin(), outputLoose.end());
-   //fillerLoose.fill();
-   //iEvent.put(valMapLoose,"isLooseMuon");
-
    iEvent.put(outputTight,"isTightMuon");
    iEvent.put(outputLoose,"isLooseMuon");
+   iEvent.put(outputTag,"isTagMuon");
+   iEvent.put(outputProbe,"isProbeMuon");
 }
 
 // ------------ method to output detid regardless of type ---------------
@@ -246,13 +228,13 @@ MuonME42CandidateProducer::outputDetId(DetId id)
    DetId::Detector det = id.det();
    int subdet = id.subdetId();
    if (det==2 && subdet==1) {
-      std::cout << (DTChamberId)id << std::endl;
+      std::cout << (DTChamberId)id;
    }
    else if (det==2 && subdet==2) {
-      std::cout << (CSCDetId)id << std::endl;
+      std::cout << (CSCDetId)id;
    }
    else if (det==2 && subdet==3) {
-      std::cout << (RPCDetId)id << std::endl;
+      std::cout << (RPCDetId)id;
    }
 }
 
@@ -391,7 +373,7 @@ MuonME42CandidateProducer::isTightMuon(const reco::Muon& muon, const reco::Verte
    bool inner = (muon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5);
    bool stations = (muon.numberOfMatchedStations() > 1);
    // for this, i need to remake my probe collection as well with the vertex cut, otherwise the dz is going to cause way too many fails
-   bool vert = (fabs(muon.muonBestTrack()->dxy(vertex.position())) < 0.2); // && fabs(muon.muonBestTrack()->dz(vertex.position())) < 0.5);
+   bool vert = (fabs(muon.muonBestTrack()->dxy(vertex.position())) < 0.2);// && fabs(muon.muonBestTrack()->dz(vertex.position())) < 0.5);
    return (type && global && inner && stations && vert);
 }
 
@@ -400,6 +382,22 @@ bool
 MuonME42CandidateProducer::isLooseMuon(const reco::Muon& muon)
 {
    return muon::isLooseMuon(muon);
+}
+
+// ------------ method to determine if it is a tag muon ------------
+bool
+MuonME42CandidateProducer::isTagMuon(const reco::Muon& muon, const reco::Vertex& vertex)
+{
+   return (isTightMuon(muon,vertex));
+}
+
+// ------------ method to determine if it is a probe muon ------------
+bool
+MuonME42CandidateProducer::isProbeMuon(const reco::Muon& muon, const reco::Vertex& vertex)
+{
+   bool standalone = (muon.isStandAloneMuon());
+   bool vert = (fabs(muon.muonBestTrack()->dxy(vertex.position())) < 0.2 && fabs(muon.muonBestTrack()->dz(vertex.position())) < 0.5);
+   return (standalone && vert);
 }
 
 // ------------ method called once each job just before starting event loop  ------------
