@@ -5,10 +5,10 @@ import FWCore.ParameterSet.Config as cms
 ###
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
-options.parseArguments()
 
 options.inputFiles = "file:SingleMu_Run2012A_RECO.root"
 options.outputFile = "ME42TagAndProbeTree.root"
+options.parseArguments()
 
 ###
 # User configurable parameters
@@ -17,8 +17,6 @@ MCFLAG = False 				# MC not yet implemented
 
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 HLTTRIGGER = cms.vstring( 'HLT_IsoMu24_v*', 'HLT_IsoMu24_eta2p1_v*', 'HLT_Mu40_v*', 'HLT_Mu40_eta2p1_v*' )
-
-OUTPUTFILENAME = "ME42TagAndProbeTree.root"
 
 MUONCUT = "pt>20 && abs(eta)<2.4"
 PLUSME42ETACUT = " && outerTrack().outerEta()>1.2 && outerTrack().outerEta()<1.8"
@@ -90,7 +88,6 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ME42MuonCands')
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
 		options.inputFiles
-		#'file:SingleMu_Run2012A_RECO.root'
 	)
 )
 
@@ -216,7 +213,6 @@ process.TagAndProbe = cms.Path(
 # output
 ###
 process.TFileService = cms.Service("TFileService",
-	#fileName = cms.string(OUTPUTFILENAME),
 	fileName = cms.string(options.outputFile),
 )
 

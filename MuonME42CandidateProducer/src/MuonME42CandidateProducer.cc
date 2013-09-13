@@ -320,22 +320,35 @@ MuonME42CandidateProducer::isME42Trans(reco::TrackRef track)
    // hacked solution
    reco::TransientTrack transTrack(track,&*theMGField_,theTrackingGeometry_);
    TrajectoryStateOnSurface outerTSOS = transTrack.outermostMeasurementState();
-   GlobalPoint oldPoint = outerTSOS.globalPosition();
-   if (oldPoint.z()>0) {
+   GlobalPoint oldPoint1 = outerTSOS.globalPosition();
+   GlobalPoint oldPoint2 = outerTSOS.globalPosition();
+   if (oldPoint1.z()>0) {
       for (int j = 0; j<10; j++) {
-         GlobalPoint newPoint(oldPoint.x(),oldPoint.y(),1025.0);
-         TrajectoryStateClosestToPoint traj = transTrack.trajectoryStateClosestToPoint(newPoint);
-         if (traj.isValid()) {
-            GlobalPoint closestPoint = traj.position();
-            if (fabs(closestPoint.z()-1025.0)<15.0) {
-               if (isME42HitPattern(track)!=isME42(closestPoint)) { 
+         GlobalPoint newPoint1(oldPoint1.x(),oldPoint1.y(),1012.5);
+         GlobalPoint newPoint2(oldPoint2.x(),oldPoint2.y(),1037.5);
+         TrajectoryStateClosestToPoint traj1 = transTrack.trajectoryStateClosestToPoint(newPoint1);
+         TrajectoryStateClosestToPoint traj2 = transTrack.trajectoryStateClosestToPoint(newPoint2);
+         if (traj1.isValid() && traj2.isValid()) {
+            GlobalPoint closestPoint1 = traj1.position();
+            GlobalPoint closestPoint2 = traj2.position();
+            bool closest1 = fabs(closestPoint1.z()-1012.5)<1.0;
+            bool closest2 = fabs(closestPoint2.z()-1037.5)<1.0;
+            if (closest1 || closest2) {
+               if (isME42HitPattern(track) || isME42(closestPoint1) || isME42(closestPoint2)) { 
                   std::cout << "-----------" << std::endl
                             << "ME4/2 hit pattern?: " << isME42HitPattern(track) << std::endl
-                            << "isME42: " << isME42(closestPoint) << std::endl;
+                            << "isME42: " << isME42(closestPoint1) << " " << isME42(closestPoint2) << std::endl
+                            << "outerEta: " << (*track).outerEta() << " outerPhi: " << (*track).outerPhi() << std::endl
+                            << "outerX: " << (*track).outerX() << " outerY: " << (*track).outerY() << " outerZ: " << (*track).outerZ() << std::endl
+                            << "pointEta: " << closestPoint1.eta() << " pointPhi: " << closestPoint1.phi() << std::endl
+                            << "pointX: " << closestPoint1.x() << " pointY: " << closestPoint1.y() << " pointZ: " << closestPoint1.z() << std::endl
+                            << "pointEta: " << closestPoint2.eta() << " pointPhi: " << closestPoint2.phi() << std::endl
+                            << "pointX: " << closestPoint2.x() << " pointY: " << closestPoint2.y() << " pointZ: " << closestPoint2.z() << std::endl;
                }
-               return isME42(closestPoint);
+               return closest1 ? isME42(closestPoint1) : isME42(closestPoint2);
             }
-            oldPoint = closestPoint;
+            oldPoint1 = closestPoint1;
+            oldPoint2 = closestPoint2;
          }
       }
    }
