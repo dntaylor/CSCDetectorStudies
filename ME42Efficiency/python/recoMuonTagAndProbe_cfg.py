@@ -3,6 +3,10 @@ import FWCore.ParameterSet.Config as cms
 ###
 # Defaults
 ###
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing ('analysis')
+options.parseArguments()
+
 options.inputFiles = "file:SingleMu_Run2012A_RECO.root"
 options.outputFile = "ME42TagAndProbeTree.root"
 
