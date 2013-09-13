@@ -1,6 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
 ###
+# Defaults
+###
+options.inputFiles = "file:SingleMu_Run2012A_RECO.root"
+options.outputFile = "ME42TagAndProbeTree.root"
+
+###
 # User configurable parameters
 ###
 MCFLAG = False 				# MC not yet implemented
@@ -72,13 +78,15 @@ process.options = cms.untracked.PSet(
 #	SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.suppressWarning = cms.untracked.vstring('ME42MuonCands')
 
 ###
 # datasets
 ###
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-		'file:SingleMu_Run2012A_RECO.root'
+		options.inputFiles
+		#'file:SingleMu_Run2012A_RECO.root'
 	)
 )
 
@@ -204,6 +212,7 @@ process.TagAndProbe = cms.Path(
 # output
 ###
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string(OUTPUTFILENAME),
+	#fileName = cms.string(OUTPUTFILENAME),
+	fileName = cms.string(options.outputFile),
 )
 

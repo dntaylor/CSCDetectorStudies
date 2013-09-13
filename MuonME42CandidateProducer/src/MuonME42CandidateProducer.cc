@@ -26,6 +26,7 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -48,12 +49,19 @@
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 #include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
 #include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
 #include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
 #include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
+
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
+#include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
+#include "Geometry/CommonDetUnit/interface/GeomDet.h"
 
 #include "TMath.h"
 
@@ -80,6 +88,7 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
       virtual bool isME42(reco::TrackRef);
+      virtual bool isME42Trans(reco::TrackRef);
       virtual bool isME42HitPattern(reco::TrackRef);
       virtual bool isME42(GlobalPoint);
       virtual bool isME42Alt(reco::TrackRef);
@@ -105,6 +114,9 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       MuonTrackLoader* trackLoader_;
       MuonTrajectoryBuilder* trajectoryBuilder_;
       MuonTrackFinder* trackFinder_;
+      edm::ESHandle<MagneticField> theMGField_;
+      edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;
+
 };
 
 //
@@ -167,6 +179,9 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    Handle<reco::BeamSpot> beamspot;
    iEvent.getByLabel(beamspot_,beamspot);
 
+   iSetup.get<IdealMagneticFieldRecord>().get(theMGField_);
+   iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry_);
+
    const reco::Vertex & vertex = getPrimaryVertex(vertices,beamspot);
 
    // update muon service
@@ -203,7 +218,7 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       if (muon.isStandAloneMuon()) {
          reco::TrackRef track = muon.outerTrack();
          // SWITCH from isME42Alt to isME42 to try track refitter
-         outputME42.push_back(isME42Alt(track));
+         outputME42.push_back(isME42Trans(track));
       }
       else { outputME42.push_back(0); }
    }
@@ -263,6 +278,70 @@ MuonME42CandidateProducer::isME42(reco::TrackRef track)
    return 0;
 }
 
+// ------------ method to determing if muon in ME4/2 with trajectory ----------
+bool
+MuonME42CandidateProducer::isME42Trans(reco::TrackRef track)
+{
+  // // iterate over recHits
+  // if (isME42HitPattern(track)) {
+  //    std::cout << "-------------------" << std::endl;
+  //    std::cout << "Has ME4/2" << std::endl;
+  // }
+  // for (trackingRecHit_iterator recHit = track->recHitsBegin(); recHit != track->recHitsEnd(); ++recHit) {
+  //    const GeomDet* geomDet = theTrackingGeometry_->idToDet((*recHit)->geographicalId());
+  //    double r = geomDet->surface().position().perp();
+  //    double z = geomDet->toGlobal((*recHit)->localPosition()).z();
+  //    if (isME42HitPattern(track)) std::cout << "r: " << r << " z: " << z << std::endl;
+  // }
+  // // create transient track
+  // reco::TransientTrack transTrack(track,&*theMGField_,theTrackingGeometry_);
+  // TrajectoryStateOnSurface outerTSOS = transTrack.outermostMeasurementState();
+  // GlobalPoint point = outerTSOS.globalPosition();
+  // if (isME42HitPattern(track)) {
+  //    std::cout << "outer point" << std::endl;
+  //    std::cout << "x: " << point.x() << " y: " << point.y() << " z: " << point.z() << std::endl;
+  //    std::cout << "eta: " << point.eta() << " phi: " << point.phi() << std::endl;
+  // }
+  // // if in the positive z, find trajectory state closest to point
+  // if (point.z()>0) {
+  //    GlobalPoint pointME42(point.x(),point.y(),1025.);
+  //    TrajectoryStateClosestToPoint traj = transTrack.trajectoryStateClosestToPoint(pointME42);
+  //    if (!traj.isValid()) return 0;
+  //    GlobalPoint closestPoint = traj.position();
+  //    if (isME42HitPattern(track)) {
+  //       std::cout << "closest point" << std::endl;
+  //       std::cout << "x: " << closestPoint.x() << " y: " << closestPoint.y() << " z: " << closestPoint.z() << std::endl;
+  //       std::cout << "eta: " << closestPoint.eta() << " phi: " << closestPoint.phi() << std::endl;
+  //    }
+  //    return isME42(closestPoint);
+  // }
+  // return 0;
+
+   // hacked solution
+   reco::TransientTrack transTrack(track,&*theMGField_,theTrackingGeometry_);
+   TrajectoryStateOnSurface outerTSOS = transTrack.outermostMeasurementState();
+   GlobalPoint oldPoint = outerTSOS.globalPosition();
+   if (oldPoint.z()>0) {
+      for (int j = 0; j<10; j++) {
+         GlobalPoint newPoint(oldPoint.x(),oldPoint.y(),1025.0);
+         TrajectoryStateClosestToPoint traj = transTrack.trajectoryStateClosestToPoint(newPoint);
+         if (traj.isValid()) {
+            GlobalPoint closestPoint = traj.position();
+            if (fabs(closestPoint.z()-1025.0)<15.0) {
+               if (isME42HitPattern(track)!=isME42(closestPoint)) { 
+                  std::cout << "-----------" << std::endl
+                            << "ME4/2 hit pattern?: " << isME42HitPattern(track) << std::endl
+                            << "isME42: " << isME42(closestPoint) << std::endl;
+               }
+               return isME42(closestPoint);
+            }
+            oldPoint = closestPoint;
+         }
+      }
+   }
+   return 0;
+}
+
 // ------------ method to determine if muon is in ME4/2 region with hitpatter --------
 bool
 MuonME42CandidateProducer::isME42HitPattern(reco::TrackRef track)
@@ -286,7 +365,7 @@ MuonME42CandidateProducer::isME42HitPattern(reco::TrackRef track)
          if (hp.getMuonStation(pattern)==4 && hp.getCSCRing(pattern)==2) { result = 1; }
       }
    }
-   std::cout << "Number muon missing: " << numMissing << std::endl;
+   //std::cout << "Number muon missing: " << numMissing << std::endl;
    return result;
 }
 
