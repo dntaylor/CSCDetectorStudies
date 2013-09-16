@@ -1,52 +1,53 @@
 import FWCore.ParameterSet.Config as cms
 from ROOT import TMath
 
+###
+# Defaults
+###
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing ('analysis')
+
+options.inputFiles = "file:ME42TagAndProbeTree.root"
+options.outputFile = "ME42TagAndProbeTreeAnalysis.root"
+options.register ('analysisVar', 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, "Select analyzer to run")
+options.register ('inputDirectoryName', 'tagAndProbeTree', VarParsing.multiplicity.singleton, VarParsing.varType.string, "Analyzer input directory")
+options.parseArguments()
+
+
 # Choose analysis to run
 #ANALYSIS = 0 # all (not coded)
 #ANALYSIS = 1 # basic
 #ANALYSIS = 2 # ME42
-#ANALYSIS = 3 # ME42With3Of4
-#ANALYSIS = 4 # NoME42
-#ANALYSIS = 5 # ME42Eta
-#ANALYSIS = 6 # ME42With3Of4Eta
-ANALYSIS = 7 # NoME42Eta
-#ANALYSIS = 8 # ME42Phi
-#ANALYSIS = 9 # ME42With3Of4Phi
-#ANALYSIS = 10# NoME42Phi
+#ANALYSIS = 3 # NoME42
+#ANALYSIS = 4 # ME42Eta
+#ANALYSIS = 5 # NoME42Eta
+#ANALYSIS = 6 # ME42Phi
+#ANALYSIS = 7 # NoME42Phi
 
 # file variables
-if ANALYSIS==0:
+if options.analysisVar==0:
 	pass # not coded
-elif ANALYSIS==1:
-	INPUTDIRECTORYNAME = "tagAndProbeTree"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysis.root"
-elif ANALYSIS==2:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42.root"
-elif ANALYSIS==3:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4.root"
-elif ANALYSIS==4:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42.root"
-elif ANALYSIS==5:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42Eta"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42Eta.root"
-elif ANALYSIS==6:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4Eta"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4Eta.root"
-elif ANALYSIS==7:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42Eta"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42Eta.root"
-elif ANALYSIS==8:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42Phi"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42Phi.root"
-elif ANALYSIS==9:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeME42With3Of4Phi"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisME42With3Of4Phi.root"
-elif ANALYSIS==10:
-	INPUTDIRECTORYNAME = "tagAndProbeTreeNoME42Phi"
-	OUTPUTFILENAME = "ME42TagAndProbeTreeAnalysisNoME42Phi.root"
+elif options.analysisVar==1:
+	options.inputDirectoryName = "tagAndProbeTree"
+	options.outputFile = "ME42TagAndProbeTreeAnalysis.root"
+elif options.analysisVar==2:
+	options.inputDirectoryName = "tagAndProbeTreeME42"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisME42.root"
+elif options.analysisVar==3:
+	options.inputDirectoryName = "tagAndProbeTreeNoME42"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42.root"
+elif options.analysisVar==4:
+	options.inputDirectoryName = "tagAndProbeTreeME42Eta"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisME42Eta.root"
+elif options.analysisVar==5:
+	options.inputDirectoryName = "tagAndProbeTreeNoME42Eta"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42Eta.root"
+elif options.analysisVar==6:
+	options.inputDirectoryName = "tagAndProbeTreeME42Phi"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisME42Phi.root"
+elif options.analysisVar==7:
+	options.inputDirectoryName = "tagAndProbeTreeNoME42Phi"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42Phi.root"
 
 # Prepare Efficiency PSet
 EFFICIENCIES = cms.PSet( 
@@ -55,16 +56,16 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
-	# loost muon pt cuts
+	# loose muon pt cuts
 	loose_pt = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -122,22 +123,25 @@ EFFICIENCIES = cms.PSet(
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
+	# matchedStations tight muon cut
+	tight_matchedStations = cms.PSet(
+		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
+		UnbinnedVariables = cms.vstring("mass"),
+		BinnedVariables = cms.PSet(
+			numberOfMatchedStations = cms.vdouble(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5),
+		),
+		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+	),
+	# matchedStations loose muon cut
+	loose_matchedStations = cms.PSet(
+		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
+		UnbinnedVariables = cms.vstring("mass"),
+		BinnedVariables = cms.PSet(
+			numberOfMatchedStations = cms.vdouble(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5),
+		),
+		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+	),
 )
-
-#ALL = [1,2,3]
-#ETA = [4,5]
-#PHI = [6,7]
-#
-#EFFICIENCIESALL = cms.PSet(tight_pt,loose_pt,tight_eta,loose_eta,tight_phi,loose_phi)
-#EFFICIENCIESETA = cms.PSet(tight_pt,loose_pt,tight_phi,loose_phi)
-#EFFICIENCIESPHI = cms.PSet(tight_pt,loose_pt,tight_eta,loose_eta)
-#
-#if ANALYSIS in ALL:
-#	EFFICIENCIES = EFFICIENCIESALL
-#elif ANALYSIS in ETA:
-#	EFFICIENCIES = EFFICIENCIESETA
-#elif ANALYSIS in PHI:
-#	EFFICIENCIES = EFFICIENCIESPHI
 
 process = cms.Process("TagProbe")
 
@@ -148,10 +152,10 @@ process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )   
 
 process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
-	InputFileNames = cms.vstring("ME42TagAndProbeTree.root"),
-	InputDirectoryName = cms.string(INPUTDIRECTORYNAME),
+	InputFileNames = cms.vstring(options.inputFiles),
+	InputDirectoryName = cms.string(options.inputDirectoryName),
 	InputTreeName = cms.string("fitter_tree"),
-	OutputFileName = cms.string(OUTPUTFILENAME),
+	OutputFileName = cms.string(options.outputFile),
 	NumCPU = cms.uint32(1),
 	SaveWorkspace = cms.bool(True),
 	Variables = cms.PSet(
@@ -159,6 +163,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
 		phi = cms.vstring("Probe #phi", "-3.14159", "3.14159", ""),
+		numberOfMatchedStations = cms.vstring("Probe Matched Stations", "0", "4", ""),
 		isME42 = cms.vstring("Probe Region","0","2",""),
 	),
 	Categories = cms.PSet(
@@ -196,38 +201,9 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 )
 
 ####
-# analyzer clones
-####
-#process.TagProbeFitTreeAnalyzerME42 = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeME42"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisME42.root"),
-#)
-#process.TagProbeFitTreeAnalyzerNoME42 = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeNoME42"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisNoME42.root"),
-#)
-#process.TagProbeFitTreeAnalyzerME42Eta = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeME42Eta"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisME42Eta.root"),
-#)
-#process.TagProbeFitTreeAnalyzerNoME42Eta = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeNoME42Eta"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisNoME42Eta.root"),
-#)
-#process.TagProbeFitTreeAnalyzerME42Phi = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeME42Phi"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisME42Phi.root"),
-#)
-#process.TagProbeFitTreeAnalyzerNoME42Phi = process.TagProbeFitTreeAnalyzer.clone( 
-#	InputDirectoryName = cms.string("tagAndProbeTreeNoME42Phi"),
-#        OutputFileName = cms.string("ME42TagAndProbeTreeAnalysisNoME42Phi.root"),
-#)
-
-####
 # Path
 ####
 process.fitness = cms.Path(
-	process.TagProbeFitTreeAnalyzer #*
-#	(process.TagProbeFitTreeAnalyzerME42 + process.TagProbeFitTreeAnalyzerNoME42 + process.TagProbeFitTreeAnalyzerME42Eta + process.TagProbeFitTreeAnalyzerNoME42Eta + process.TagProbeFitTreeAnalyzerME42Phi + process.TagProbeFitTreeAnalyzerNoME42Phi)
+	process.TagProbeFitTreeAnalyzer 
 )
 	

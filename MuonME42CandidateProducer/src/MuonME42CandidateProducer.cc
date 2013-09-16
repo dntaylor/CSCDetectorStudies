@@ -51,11 +51,11 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
-#include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
-#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
-#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
-#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
-#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
+//#include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
+//#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
+//#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
+//#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
+//#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
@@ -104,16 +104,16 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       edm::InputTag muons_;
       edm::InputTag vertices_;
       edm::InputTag beamspot_;
-      edm::ParameterSet serviceProxyParameters_;
-      edm::ParameterSet refitterParameters_;
-      edm::ParameterSet trackLoaderParameters_;
-      edm::ParameterSet trackBuilderParameters_;
+      //edm::ParameterSet serviceProxyParameters_;
+      //edm::ParameterSet refitterParameters_;
+      //edm::ParameterSet trackLoaderParameters_;
+      //edm::ParameterSet trackBuilderParameters_;
 
-      MuonServiceProxy* muonService_;
-      StandAloneMuonRefitter* refitter_;
-      MuonTrackLoader* trackLoader_;
-      MuonTrajectoryBuilder* trajectoryBuilder_;
-      MuonTrackFinder* trackFinder_;
+      //MuonServiceProxy* muonService_;
+      //StandAloneMuonRefitter* refitter_;
+      //MuonTrackLoader* trackLoader_;
+      //MuonTrajectoryBuilder* trajectoryBuilder_;
+      //MuonTrackFinder* trackFinder_;
       edm::ESHandle<MagneticField> theMGField_;
       edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;
 
@@ -134,11 +134,11 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
    muons_(iConfig.getParameter<edm::InputTag>("MuonCollection")),
    vertices_(iConfig.getParameter<edm::InputTag>("VertexCollection")),
-   beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot")),
-   serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
-   refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
-   trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
-   trackBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
+   beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot"))
+   //serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
+   //refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
+   //trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
+   //trackBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
    produces<edm::ValueMap<float>>("isME42");
@@ -147,8 +147,8 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    produces<reco::MuonCollection>("isTagMuon");
    produces<reco::MuonCollection>("isProbeMuon");
    //now do what ever other initialization is needed
-   muonService_ = new MuonServiceProxy(serviceProxyParameters_);
-   refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
+   //muonService_ = new MuonServiceProxy(serviceProxyParameters_);
+   //refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
 }
 
 
@@ -185,7 +185,7 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    const reco::Vertex & vertex = getPrimaryVertex(vertices,beamspot);
 
    // update muon service
-   muonService_->update(iSetup);
+   //muonService_->update(iSetup);
 
    // vector to store outputs
    std::vector<float> outputME42;
@@ -194,18 +194,6 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    std::auto_ptr<RefToBaseVector<reco::Muon>> outputLoose(new RefToBaseVector<reco::Muon>());
    std::auto_ptr<reco::MuonCollection> outputTag(new reco::MuonCollection());
    std::auto_ptr<reco::MuonCollection> outputProbe(new reco::MuonCollection());
-
-         //bool isME42Hp = isME42HitPattern(track);
-         //if (wantOutput(track->outerDetId())) {
-         //if (output.back() || isME42Alt(track) || isME42Hp) {
-         //   std::cout << "------------------------------" << std::endl;
-         //   outputDetId(track->outerDetId());
-         //   std::cout << std::endl;
-         //   std::cout << "eta: " << muon->eta() << " phi: " << muon->phi() << std::endl;
-         //   std::cout << "outerEta: " << track->outerEta() << " outerPhi: " << track->outerPhi() << std::endl;
-         //   std::cout << "outerX: " << track->outerX() << " outerY: " << track->outerY() << " outerZ(): " << track->outerZ() << std::endl;
-         //   std::cout << "isME42: " << output.back() << " isME42Alt: " << isME42Alt(track) << " isME42Hp: " << isME42Hp << std::endl;
-         //}
 
    for (size_t i = 0, n = muons->size(); i<n; ++i) {
       RefToBase<reco::Muon> muonRef = muons->refAt(i);
@@ -217,7 +205,6 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       if (isProbeMuon(muon,vertex)) outputProbe->push_back(muon);
       if (muon.isStandAloneMuon()) {
          reco::TrackRef track = muon.outerTrack();
-         // SWITCH from isME42Alt to isME42 to try track refitter
          outputME42.push_back(isME42Trans(track));
       }
       else { outputME42.push_back(0); }
@@ -257,24 +244,24 @@ MuonME42CandidateProducer::outputDetId(DetId id)
 bool
 MuonME42CandidateProducer::isME42(reco::TrackRef track)
 {
-   // take seed trajectory
-   Trajectory seedTraj(*(track->seedRef()),track->seedDirection());
-   //Trajectory seedTraj(*(track->seedRef()));
-   // reun refit
-   std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
-   if (refitResult.first) {
-      Trajectory traj = refitResult.second;
-      // get last measurement in trajectory
-      TrajectoryMeasurement lastMeas = traj.lastMeasurement();
-      // get forward predicted state from this measurement
-      TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
-      // get global point of forward predicted state
-      GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
-      // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
-      //if (fwdGlobalPoint.z()>1012.0) {  }
-      //else {  }
-      return isME42(fwdGlobalPoint);
-   }
+//   // take seed trajectory
+//   Trajectory seedTraj(*(track->seedRef()),track->seedDirection());
+//   //Trajectory seedTraj(*(track->seedRef()));
+//   // reun refit
+//   std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
+//   if (refitResult.first) {
+//      Trajectory traj = refitResult.second;
+//      // get last measurement in trajectory
+//      TrajectoryMeasurement lastMeas = traj.lastMeasurement();
+//      // get forward predicted state from this measurement
+//      TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
+//      // get global point of forward predicted state
+//      GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
+//      // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
+//      //if (fwdGlobalPoint.z()>1012.0) {  }
+//      //else {  }
+//      return isME42(fwdGlobalPoint);
+//   }
    return 0;
 }
 
@@ -282,41 +269,6 @@ MuonME42CandidateProducer::isME42(reco::TrackRef track)
 bool
 MuonME42CandidateProducer::isME42Trans(reco::TrackRef track)
 {
-  // // iterate over recHits
-  // if (isME42HitPattern(track)) {
-  //    std::cout << "-------------------" << std::endl;
-  //    std::cout << "Has ME4/2" << std::endl;
-  // }
-  // for (trackingRecHit_iterator recHit = track->recHitsBegin(); recHit != track->recHitsEnd(); ++recHit) {
-  //    const GeomDet* geomDet = theTrackingGeometry_->idToDet((*recHit)->geographicalId());
-  //    double r = geomDet->surface().position().perp();
-  //    double z = geomDet->toGlobal((*recHit)->localPosition()).z();
-  //    if (isME42HitPattern(track)) std::cout << "r: " << r << " z: " << z << std::endl;
-  // }
-  // // create transient track
-  // reco::TransientTrack transTrack(track,&*theMGField_,theTrackingGeometry_);
-  // TrajectoryStateOnSurface outerTSOS = transTrack.outermostMeasurementState();
-  // GlobalPoint point = outerTSOS.globalPosition();
-  // if (isME42HitPattern(track)) {
-  //    std::cout << "outer point" << std::endl;
-  //    std::cout << "x: " << point.x() << " y: " << point.y() << " z: " << point.z() << std::endl;
-  //    std::cout << "eta: " << point.eta() << " phi: " << point.phi() << std::endl;
-  // }
-  // // if in the positive z, find trajectory state closest to point
-  // if (point.z()>0) {
-  //    GlobalPoint pointME42(point.x(),point.y(),1025.);
-  //    TrajectoryStateClosestToPoint traj = transTrack.trajectoryStateClosestToPoint(pointME42);
-  //    if (!traj.isValid()) return 0;
-  //    GlobalPoint closestPoint = traj.position();
-  //    if (isME42HitPattern(track)) {
-  //       std::cout << "closest point" << std::endl;
-  //       std::cout << "x: " << closestPoint.x() << " y: " << closestPoint.y() << " z: " << closestPoint.z() << std::endl;
-  //       std::cout << "eta: " << closestPoint.eta() << " phi: " << closestPoint.phi() << std::endl;
-  //    }
-  //    return isME42(closestPoint);
-  // }
-  // return 0;
-
    // hacked solution
    reco::TransientTrack transTrack(track,&*theMGField_,theTrackingGeometry_);
    TrajectoryStateOnSurface outerTSOS = transTrack.outermostMeasurementState();
