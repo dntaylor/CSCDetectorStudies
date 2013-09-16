@@ -51,12 +51,6 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
-//#include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
-//#include "RecoMuon/TrackingTools/interface/MuonTrackFinder.h"
-//#include "RecoMuon/TrackingTools/interface/MuonTrackLoader.h"
-//#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneMuonRefitter.h"
-//#include "RecoMuon/StandAloneTrackFinder/interface/StandAloneTrajectoryBuilder.h"
-
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
@@ -87,33 +81,24 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&);
 
-      virtual bool isME42(reco::TrackRef);
       virtual bool isME42Trans(reco::TrackRef);
       virtual bool isME42HitPattern(reco::TrackRef);
       virtual bool isME42(GlobalPoint);
-      virtual bool isME42Alt(reco::TrackRef);
       virtual bool isCSCDetId(DetId);
       virtual bool wantOutput(DetId);
       virtual void outputDetId(DetId);
-      const reco::Vertex getPrimaryVertex(edm::Handle<reco::VertexCollection>&,edm::Handle<reco::BeamSpot>&);
+      const reco::Vertex getPrimaryVertex(edm::Handle<reco::VertexCollection>&, edm::Handle<reco::BeamSpot>&);
       virtual bool isTightMuon(const reco::Muon&, const reco::Vertex&);
+      virtual bool isTightMuon(const reco::Muon&, edm::Handle<reco::VertexCollection>&);
       virtual bool isLooseMuon(const reco::Muon&);
       virtual bool isTagMuon(const reco::Muon&, const reco::Vertex&);
       virtual bool isProbeMuon(const reco::Muon&, const reco::Vertex&);
+
       // ----------member data ---------------------------
       edm::InputTag muons_;
       edm::InputTag vertices_;
       edm::InputTag beamspot_;
-      //edm::ParameterSet serviceProxyParameters_;
-      //edm::ParameterSet refitterParameters_;
-      //edm::ParameterSet trackLoaderParameters_;
-      //edm::ParameterSet trackBuilderParameters_;
 
-      //MuonServiceProxy* muonService_;
-      //StandAloneMuonRefitter* refitter_;
-      //MuonTrackLoader* trackLoader_;
-      //MuonTrajectoryBuilder* trajectoryBuilder_;
-      //MuonTrackFinder* trackFinder_;
       edm::ESHandle<MagneticField> theMGField_;
       edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;
 
@@ -135,20 +120,16 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    muons_(iConfig.getParameter<edm::InputTag>("MuonCollection")),
    vertices_(iConfig.getParameter<edm::InputTag>("VertexCollection")),
    beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot"))
-   //serviceProxyParameters_(iConfig.getParameter<edm::ParameterSet>("ServiceParameters")),
-   //refitterParameters_(iConfig.getParameter<edm::ParameterSet>("RefitterParameters")),
-   //trackLoaderParameters_(iConfig.getParameter<edm::ParameterSet>("TrackLoaderParameters")),
-   //trackBuilderParameters_(iConfig.getParameter<edm::ParameterSet>("STATrajBuilderParameters"))
 {
    //register your products
    produces<edm::ValueMap<float>>("isME42");
+   produces<edm::ValueMap<float>>("isME42Eta");
+   produces<edm::ValueMap<float>>("isNoME42Eta");
    produces<edm::RefToBaseVector<reco::Muon>>("isTightMuon");
    produces<edm::RefToBaseVector<reco::Muon>>("isLooseMuon");
    produces<reco::MuonCollection>("isTagMuon");
    produces<reco::MuonCollection>("isProbeMuon");
    //now do what ever other initialization is needed
-   //muonService_ = new MuonServiceProxy(serviceProxyParameters_);
-   //refitter_ = new StandAloneMuonRefitter(refitterParameters_, muonService_);
 }
 
 
@@ -184,12 +165,13 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
    const reco::Vertex & vertex = getPrimaryVertex(vertices,beamspot);
 
-   // update muon service
-   //muonService_->update(iSetup);
-
    // vector to store outputs
    std::vector<float> outputME42;
    outputME42.reserve(muons->size());
+   std::vector<float> outputME42Eta;
+   outputME42Eta.reserve(muons->size());
+   std::vector<float> outputNoME42Eta;
+   outputNoME42Eta.reserve(muons->size());
    std::auto_ptr<RefToBaseVector<reco::Muon>> outputTight(new RefToBaseVector<reco::Muon>());
    std::auto_ptr<RefToBaseVector<reco::Muon>> outputLoose(new RefToBaseVector<reco::Muon>());
    std::auto_ptr<reco::MuonCollection> outputTag(new reco::MuonCollection());
@@ -199,7 +181,8 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       RefToBase<reco::Muon> muonRef = muons->refAt(i);
       const reco::Muon & muon = *muonRef;
       // push variables
-      if (isTightMuon(muon,vertex)) outputTight->push_back(muonRef);
+      //if (isTightMuon(muon,vertex)) outputTight->push_back(muonRef);
+      if (isTightMuon(muon,vertices)) outputTight->push_back(muonRef);
       if (isLooseMuon(muon)) outputLoose->push_back(muonRef);
       if (isTagMuon(muon,vertex)) outputTag->push_back(muon);
       if (isProbeMuon(muon,vertex)) outputProbe->push_back(muon);
@@ -208,6 +191,8 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
          outputME42.push_back(isME42Trans(track));
       }
       else { outputME42.push_back(0); }
+      outputME42Eta.push_back(0);
+      outputNoME42Eta.push_back(0);
    }
 
    // convert to ValueMap and store
@@ -216,6 +201,18 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    fillerME42.insert(muons, outputME42.begin(), outputME42.end());
    fillerME42.fill();
    iEvent.put(valMapME42,"isME42");
+
+   std::auto_ptr<ValueMap<float> > valMapME42Eta(new ValueMap<float>());
+   ValueMap<float>::Filler fillerME42Eta(*valMapME42Eta);
+   fillerME42Eta.insert(muons, outputME42Eta.begin(), outputME42Eta.end());
+   fillerME42Eta.fill();
+   iEvent.put(valMapME42Eta,"isME42Eta");
+
+   std::auto_ptr<ValueMap<float> > valMapNoME42Eta(new ValueMap<float>());
+   ValueMap<float>::Filler fillerNoME42Eta(*valMapNoME42Eta);
+   fillerNoME42Eta.insert(muons, outputNoME42Eta.begin(), outputNoME42Eta.end());
+   fillerNoME42Eta.fill();
+   iEvent.put(valMapNoME42Eta,"isNoME42Eta");
  
    iEvent.put(outputTight,"isTightMuon");
    iEvent.put(outputLoose,"isLooseMuon");
@@ -238,31 +235,6 @@ MuonME42CandidateProducer::outputDetId(DetId id)
    else if (det==2 && subdet==3) {
       std::cout << (RPCDetId)id;
    }
-}
-
-// ------------ method to determing if muon in ME4/2 with trajectory ----------
-bool
-MuonME42CandidateProducer::isME42(reco::TrackRef track)
-{
-//   // take seed trajectory
-//   Trajectory seedTraj(*(track->seedRef()),track->seedDirection());
-//   //Trajectory seedTraj(*(track->seedRef()));
-//   // reun refit
-//   std::pair<bool,Trajectory> refitResult = refitter_->refit(seedTraj);
-//   if (refitResult.first) {
-//      Trajectory traj = refitResult.second;
-//      // get last measurement in trajectory
-//      TrajectoryMeasurement lastMeas = traj.lastMeasurement();
-//      // get forward predicted state from this measurement
-//      TrajectoryStateOnSurface fwdPredState = lastMeas.forwardPredictedState();
-//      // get global point of forward predicted state
-//      GlobalPoint fwdGlobalPoint = fwdPredState.globalPosition();
-//      // Test to see if corresponds to ME4 Z position, if not, propgate to next layer
-//      //if (fwdGlobalPoint.z()>1012.0) {  }
-//      //else {  }
-//      return isME42(fwdGlobalPoint);
-//   }
-   return 0;
 }
 
 // ------------ method to determing if muon in ME4/2 with trajectory ----------
@@ -343,15 +315,6 @@ MuonME42CandidateProducer::isME42(GlobalPoint point)
            point.eta()>1.2 && point.eta()<1.8);
 }
 
-// ------------ method to see if track in ME4/2 region ------------
-bool
-MuonME42CandidateProducer::isME42Alt(reco::TrackRef track)
-{
-   return (track->outerPhi()>75.*TMath::Pi()/180. &&
-           track->outerPhi()<125.*TMath::Pi()/180. &&
-           track->outerEta()>1.2 && track->outerEta()<1.8);
-}
-
 // ------------ method to determine if DetId is CSCDetId -----------------
 bool
 MuonME42CandidateProducer::isCSCDetId(DetId id)
@@ -419,6 +382,23 @@ MuonME42CandidateProducer::isTightMuon(const reco::Muon& muon, const reco::Verte
    // for this, i need to remake my probe collection as well with the vertex cut, otherwise the dz is going to cause way too many fails
    bool vert = (fabs(muon.muonBestTrack()->dxy(vertex.position())) < 0.2);// && fabs(muon.muonBestTrack()->dz(vertex.position())) < 0.5);
    return (type && global && inner && stations && vert);
+}
+
+// ------------ method to determine if tight muon -------------
+bool 
+MuonME42CandidateProducer::isTightMuon(const reco::Muon& muon, edm::Handle<reco::VertexCollection> &vertices)
+{
+   // iterate over the vertex collection
+   if (vertices.isValid()) {
+      for (reco::VertexCollection::const_iterator vertex = vertices->begin(); vertex != vertices->end(); ++vertex) {
+         if (vertex->isValid() && !vertex->isFake()) {
+            if (muon::isTightMuon(muon,*vertex)) return true;   
+         }
+      }
+   }
+
+   // beamspot check
+   return false;
 }
 
 // ------------ method to determine if loose muon -------------
