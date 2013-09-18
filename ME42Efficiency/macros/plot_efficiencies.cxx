@@ -20,6 +20,8 @@ void plot_all()
    TCanvas* cTightME42 = plot_single2("ME42","tight");
    TCanvas* cLoosePt = plot_single2("pt","loose");
    TCanvas* cTightPt = plot_single2("pt","tight");
+   TCanvas* cLooseSta = plot_single2("sta","loose");
+   TCanvas* cTightSta = plot_single2("sta","tight");
 
    Plots->Close();
 }
@@ -203,13 +205,33 @@ TCanvas* plot_single2(string var, string type)
          TString rVar = "rTightPt";
       }
    }
+   if (var=="sta") {
+      TString ME42FileName = "ME42TagAndProbeTreeAnalysisME42.root";
+      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisNoME42Eta.root";
+      TString PlotName = "numMatchedStations_PLOT";
+      TString VarName = "Number of Matched Stations";
+      if (type=="loose") {
+         TString ME42DirName = "tagAndProbeTreeME42/loose_matchedStations/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Eta/loose_matchedStations/fit_eff_plots/";
+         TString cName = "cLooseSta";
+         TString cTitle = "Loose #mu";
+         TString rVar = "rLooseSta";
+      }
+      if (type=="tight") {
+         TString ME42DirName = "tagAndProbeTreeME42/tight_matchedStations/fit_eff_plots/";
+         TString NoME42DirName = "tagAndProbeTreeNoME42Eta/tight_matchedStations/fit_eff_plots/";
+         TString cName = "cTightSta";
+         TString cTitle = "Tight #mu";
+         TString rVar = "rTightSta";
+      }
+   }
 
    TFile* ME42 = TFile::Open(ME42FileName);
    TDirectory* ME42Dir = ME42->GetDirectory(ME42DirName);
    TCanvas* cME42 = (TCanvas*)ME42Dir->Get(PlotName);
    RooHist* rhME42 = (RooHist*)cME42->GetPrimitive("hxy_fit_eff");
 
-   if (var=="pt") {
+   if (var=="pt" || var=="sta") {
       TFile* NoME42 = TFile::Open(NoME42FileName);
       TDirectory* NoME42Dir = NoME42->GetDirectory(NoME42DirName);
       TCanvas* cNoME42 = (TCanvas*)NoME42Dir->Get(PlotName);
@@ -222,12 +244,15 @@ TCanvas* plot_single2(string var, string type)
    if (var=="ME42") {
       RooPlot* frame = x.frame(2);
    }
+   else if (var=="sta") {
+      RooPlot* frame = x.frame(4);
+   }
    else {
       RooPlot* frame = x.frame();
    }
 
    rhME42->SetLineColor(kRed);
-   if (var=="pt") { rhNoME42->SetLineColor(kBlue); }
+   if (var=="pt" || var=="sta") { rhNoME42->SetLineColor(kBlue); }
    
    // bin labels
    if (var=="ME42") {
@@ -237,9 +262,17 @@ TCanvas* plot_single2(string var, string type)
          frame->GetXaxis()->SetBinLabel(i+1,isME42Labels[i]); 
       }
    }
+   if (var=="sta") {
+      const int numLabels = 4;
+      const char *numMatchedStationsLabels[numLabels] = {"2","3","4","5"};
+      for (int i=0;i<numLabels;i++) {
+         frame->GetXaxis()->SetBinLabel(i+1,numMatchedStationsLabels[i]);
+      }
+   }
 
    frame->addPlotable(rhME42,"P");
    if (var=="pt") { frame->addPlotable(rhNoME42,"P"); }
+   if (var=="sta") { frame->addPlotable(rhNoME42,"P"); }
    frame->SetMinimum(0.9);
    frame->SetMaximum(1.0);
    frame->SetTitle(cTitle);
@@ -247,13 +280,12 @@ TCanvas* plot_single2(string var, string type)
    frame->Draw();
 
    // Draw Legend
-   if (var=="pt") {
+   if (var=="pt" || var=="sta") {
       TLegend* l = new TLegend(0.7,0.8,0.9,0.9);
       l->AddEntry(rhME42,"ME4/2 Region","l");
       l->AddEntry(rhNoME42,"Non-ME4/2 Region","l");
       l->Draw();
    }
-
 
    c->Update();
    return c;

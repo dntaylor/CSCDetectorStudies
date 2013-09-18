@@ -56,7 +56,7 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -65,7 +65,7 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			pt = cms.vdouble(20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 500.0),
+			pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -128,7 +128,7 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingTightMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			numMatchedStations = cms.vdouble(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5),
+			numMatchedStations = cms.vdouble(1.5, 2.5, 3.5, 4.5, 5.5),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -137,7 +137,7 @@ EFFICIENCIES = cms.PSet(
 		EfficiencyCategoryAndState = cms.vstring("passingLooseMuon","true"),
 		UnbinnedVariables = cms.vstring("mass"),
 		BinnedVariables = cms.PSet(
-			numMatchedStations = cms.vdouble(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5),
+			numMatchedStations = cms.vdouble(1.5, 2.5, 3.5, 4.5, 5.5),
 		),
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
@@ -163,7 +163,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
 		phi = cms.vstring("Probe #phi", "-3.14159", "3.14159", ""),
-		numMatchedStations = cms.vstring("Probe Matched Stations", "0", "5", ""),
+		numMatchedStations = cms.vstring("Probe Matched Stations", "2", "6", ""),
 		isME42 = cms.vstring("Probe Region","0","2",""),
 	),
 	Categories = cms.PSet(

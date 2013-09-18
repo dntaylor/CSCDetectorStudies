@@ -120,6 +120,7 @@ MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iC
    produces<edm::ValueMap<float>>("isME42");
    produces<edm::RefToBaseVector<reco::Muon>>("isTightMuon");
    produces<edm::RefToBaseVector<reco::Muon>>("isLooseMuon");
+
    //now do what ever other initialization is needed
 }
 
@@ -174,6 +175,7 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
       }
       else { outputME42.push_back(0); }
    }
+   
 
    // convert to ValueMap and store
    std::auto_ptr<ValueMap<float> > valMapME42(new ValueMap<float>());
