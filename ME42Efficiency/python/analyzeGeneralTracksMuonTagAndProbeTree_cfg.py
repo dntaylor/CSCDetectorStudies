@@ -61,14 +61,14 @@ EFFICIENCIES = cms.PSet(
 		BinToPDFmap = cms.vstring("voigtianPlusExponential")
 	),
 	# ME4/2 muon cut
-#	ME42 = cms.PSet(
-#		EfficiencyCategoryAndState = cms.vstring("trkPassingSta","true"),
-#		UnbinnedVariables = cms.vstring("mass"),
-#		BinnedVariables = cms.PSet(
-#			isME42 = cms.vdouble(-0.5, 0.5, 1.5),
-#		),
-#		BinToPDFmap = cms.vstring("voigtianPlusExponential")
-#	),
+	ME42 = cms.PSet(
+		EfficiencyCategoryAndState = cms.vstring("trkPassingSta","true"),
+		UnbinnedVariables = cms.vstring("mass"),
+		BinnedVariables = cms.PSet(
+			isME42 = cms.vdouble(-0.5, 0.5, 1.5),
+		),
+		BinToPDFmap = cms.vstring("voigtianPlusExponential")
+	),
 )
 
 process = cms.Process("TagProbe")
@@ -91,7 +91,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
 		pt = cms.vstring("Probe p_{T}", "0", "500", "GeV/c"),
 		eta = cms.vstring("Probe #eta", "-2.4", "2.4", ""),
 		phi = cms.vstring("Probe #phi", "-3.14159", "3.14159", ""),
-		#isME42 = cms.vstring("Probe Region","0","2",""),
+		isME42 = cms.vstring("Probe Region","0","2",""),
 	),
 	Categories = cms.PSet(
 		trkPassingSta = cms.vstring("pass","dummy[true=1,false=0]"),

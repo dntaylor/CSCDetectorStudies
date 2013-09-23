@@ -18,8 +18,6 @@ MCFLAG = False 				# MC not yet implemented
 GLOBALTAG = "FT_R_53_V6::All" 		# 2012AB re-reco + prompt tag
 
 MUONCUT = "pt>20 && abs(eta)<2.4"
-TAGCOLLECTION = "muons"
-PROBECOLLECTION = "generalTracks" 
 
 TAGCUT = MUONCUT + \
 	" && isGlobalMuon && isPFMuon" + \
@@ -80,35 +78,65 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # tag and probe selections
 ###
 process.tags = cms.EDFilter("MuonRefSelector",
-	src = cms.InputTag(TAGCOLLECTION),
+	src = cms.InputTag('muons'),
 	cut = cms.string(TAGCUT),
 )
 
 # convert tracks to charged candidates assuming muon
 from  SimGeneral.HepPDTESSource.pythiapdt_cfi import *
-process.trackProbes = cms.EDProducer("ConcreteChargedCandidateProducer",
-	src = cms.InputTag(PROBECOLLECTION),
+
+# tracks into candidates
+process.allTracks = cms.EDProducer("ConcreteChargedCandidateProducer",
+	src = cms.InputTag("generalTracks"),
 	particleType = cms.string("mu-"),
 )
 
-process.probes = cms.EDFilter("CandViewSelector",
-	src = cms.InputTag("trackProbes"),
+process.staTracks = cms.EDProducer("ConcreteChargedCandidateProducer",
+	src = cms.InputTag("standAloneMuons"),
+	particleType = cms.string("mu-"),
+)
+
+# select track candidates
+process.trkCands = cms.EDFilter("RecoChargedCandidateRefSelector",
+	src = cms.InputTag("allTracks"),
 	cut = cms.string(PROBECUT),
 )
 
+process.staCands = cms.EDFilter("RecoChargedCandidateRefSelector",
+	src = cms.InputTag("staTracks"),
+	cut = cms.string(PROBECUT),
+)
+
+# make z tag probe map
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
-	decay = cms.string("tags@+ probes@-"),
+	decay = cms.string("tags@+ trkCands@-"),
 	cut = cms.string(ZMASSCUT),
+)
+
+# match tracks and standalone tracks
+process.trkStaMatch = cms.EDProducer("TrivialDeltaRViewMatcher",
+	src = cms.InputTag("allTracks"), 
+	matched = cms.InputTag("staTracks"),
+	distMin = cms.double(0.1),
+)
+
+# get candidates from matching
+process.trkPassingSta = cms.EDProducer("RecoChargedCandidateMatchedProbeMaker",
+	Matched = cms.untracked.bool(True),
+	ReferenceSource = cms.untracked.InputTag("staCands"),
+	ResMatchMapSource = cms.untracked.InputTag("trkStaMatch"),
+	CandidateSource = cms.untracked.InputTag("trkCands"),
 )
 
 ###
 # custom variables
 ###
-#process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
-#	MuonCollection = cms.InputTag(PROBECOLLECTION),
-#	VertexCollection = cms.InputTag("offlinePrimaryVertices"),
-#	BeamSpot = cms.InputTag("offlineBeamSpot"),
-#)
+
+process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
+	TrackCollection = cms.InputTag("allTracks"),
+	VertexCollection = cms.InputTag("offlinePrimaryVertices"),
+	BeamSpot = cms.InputTag("offlineBeamSpot"),
+)
 
 ###
 # produce tag and probe trees
@@ -124,6 +152,7 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 #		isME42 = cms.InputTag("ME42MuonCands","isME42"),
 	),
 	flags = cms.PSet(
+		trkPassingSta = cms.InputTag("trkPassingSta"),
 #		passingTightMuon = cms.InputTag("ME42MuonCands","isTightMuon"),
 #		passingLooseMuon = cms.InputTag("ME42MuonCands","isLooseMuon"),
 	),
@@ -136,10 +165,14 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 ###
 process.TagAndProbe = cms.Path(
 	process.tags
-	* process.trackProbes
-	* process.probes
+	* process.allTracks
+	* process.staTracks
+	* process.trkCands
+	* process.staCands
 	* process.ZTagProbe
-#        * process.ME42MuonCands
+	* process.trkStaMatch
+	* process.trkPassingSta
+#	* process.ME42MuonCands
 	* process.tagAndProbeTree
 )
 

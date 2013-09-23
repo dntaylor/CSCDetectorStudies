@@ -45,6 +45,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
 
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
@@ -90,7 +91,7 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       virtual bool isTightMuon(const reco::Muon&, edm::Handle<reco::VertexCollection>&);
 
       // ----------member data ---------------------------
-      edm::InputTag muons_;
+      edm::InputTag tracks_;
       edm::InputTag vertices_;
       edm::InputTag beamspot_;
 
@@ -112,14 +113,14 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 // constructors and destructor
 //
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
-   muons_(iConfig.getParameter<edm::InputTag>("MuonCollection")),
+   tracks_(iConfig.getParameter<edm::InputTag>("TrackCollection")),
    vertices_(iConfig.getParameter<edm::InputTag>("VertexCollection")),
    beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot"))
 {
    //register your products
    produces<edm::ValueMap<float>>("isME42");
-   produces<edm::RefToBaseVector<reco::Muon>>("isTightMuon");
-   produces<edm::RefToBaseVector<reco::Muon>>("isLooseMuon");
+   //produces<edm::RefToBaseVector<reco::RecoChargedCandidate>>("isTightMuon");
+   //produces<edm::RefToBaseVector<reco::RecoChargedCandidate>>("isLooseMuon");
 
    //now do what ever other initialization is needed
 }
@@ -145,8 +146,8 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    using namespace edm;
 
    // Handles to physics objects
-   Handle<View<reco::Muon>> muons;
-   iEvent.getByLabel(muons_,muons);
+   Handle<View<reco::RecoChargedCandidate>> tracks;
+   iEvent.getByLabel(tracks_,tracks);
    Handle<reco::VertexCollection> vertices;
    iEvent.getByLabel(vertices_,vertices);
    Handle<reco::BeamSpot> beamspot;
@@ -159,33 +160,29 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
    // vector to store outputs
    std::vector<float> outputME42;
-   outputME42.reserve(muons->size());
-   std::auto_ptr<RefToBaseVector<reco::Muon>> outputTight(new RefToBaseVector<reco::Muon>());
-   std::auto_ptr<RefToBaseVector<reco::Muon>> outputLoose(new RefToBaseVector<reco::Muon>());
+   outputME42.reserve(tracks->size());
+   //std::auto_ptr<RefToBaseVector<reco::RecoChargedCandidate>> outputTight(new RefToBaseVector<reco::RecoChargedCandidate>());
+   //std::auto_ptr<RefToBaseVector<reco::RecoChargedCandidate>> outputLoose(new RefToBaseVector<reco::RecoChargedCandidate>());
 
-   for (size_t i = 0, n = muons->size(); i<n; ++i) {
-      RefToBase<reco::Muon> muonRef = muons->refAt(i);
-      const reco::Muon & muon = *muonRef;
+   for (size_t i = 0, n = tracks->size(); i<n; ++i) {
+      RefToBase<reco::RecoChargedCandidate> trackRef = tracks->refAt(i);
+      const reco::RecoChargedCandidate & track = *trackRef;
       // push variables
-      if (isTightMuon(muon,vertices)) outputTight->push_back(muonRef);
-      if (muon::isLooseMuon(muon)) outputLoose->push_back(muonRef);
-      if (muon.isStandAloneMuon()) {
-         reco::TrackRef track = muon.outerTrack();
-         outputME42.push_back(isME42Trans(track)); 
-      }
-      else { outputME42.push_back(0); }
+      //if (isTightMuon(muon,vertices)) outputTight->push_back(trackRef);
+      //if (muon::isLooseMuon(muon)) outputLoose->push_back(trackRef);
+      outputME42.push_back(isME42Trans(track.track())); 
    }
    
 
    // convert to ValueMap and store
    std::auto_ptr<ValueMap<float> > valMapME42(new ValueMap<float>());
    ValueMap<float>::Filler fillerME42(*valMapME42);
-   fillerME42.insert(muons, outputME42.begin(), outputME42.end());
+   fillerME42.insert(tracks, outputME42.begin(), outputME42.end());
    fillerME42.fill();
    iEvent.put(valMapME42,"isME42");
 
-   iEvent.put(outputTight,"isTightMuon");
-   iEvent.put(outputLoose,"isLooseMuon");
+   //iEvent.put(outputTight,"isTightMuon");
+   //iEvent.put(outputLoose,"isLooseMuon");
 }
 
 // ------------ method to output detid regardless of type ---------------
