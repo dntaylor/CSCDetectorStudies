@@ -32,6 +32,7 @@
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/Common/interface/Ref.h"
 #include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/Common/interface/RefVector.h"
 
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
@@ -57,6 +58,8 @@
 #include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
 #include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
+
+#include "MuonAnalysis/MuonAssociators/interface/PropagateToMuon.h"
 
 #include "TMath.h"
 
@@ -94,10 +97,10 @@ class MuonME42CandidateProducer : public edm::EDProducer {
       edm::InputTag tracks_;
       edm::InputTag vertices_;
       edm::InputTag beamspot_;
+      edm::ParameterSet muonPropagatorPSet_;
 
       edm::ESHandle<MagneticField> theMGField_;
       edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry_;
-
 };
 
 //
@@ -115,12 +118,15 @@ class MuonME42CandidateProducer : public edm::EDProducer {
 MuonME42CandidateProducer::MuonME42CandidateProducer(const edm::ParameterSet& iConfig) :
    tracks_(iConfig.getParameter<edm::InputTag>("TrackCollection")),
    vertices_(iConfig.getParameter<edm::InputTag>("VertexCollection")),
-   beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot"))
+   beamspot_(iConfig.getParameter<edm::InputTag>("BeamSpot")),
+   muonPropagatorPSet_(iConfig.getParameter<edm::ParameterSet>("MuonPropagator"))
 {
    //register your products
    produces<edm::ValueMap<float>>("isME42");
    //produces<edm::RefToBaseVector<reco::RecoChargedCandidate>>("isTightMuon");
    //produces<edm::RefToBaseVector<reco::RecoChargedCandidate>>("isLooseMuon");
+   //produces<edm::RefVector<std::vector<reco::RecoChargedCandidate>>>("ME42EtaRegion");
+   //produces<edm::RefToBaseVector<reco::RecoChargedCandidate>>("ME42EtaRegion");
 
    //now do what ever other initialization is needed
 }
@@ -131,7 +137,6 @@ MuonME42CandidateProducer::~MuonME42CandidateProducer()
  
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-
 }
 
 
@@ -156,6 +161,10 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    iSetup.get<IdealMagneticFieldRecord>().get(theMGField_);
    iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry_);
 
+   // need to initialize the muon propagator at each event
+   PropagateToMuon* muonPropagator = new PropagateToMuon(muonPropagatorPSet_);
+   muonPropagator->init(iSetup);
+
    //const reco::Vertex & vertex = getPrimaryVertex(vertices,beamspot);
 
    // vector to store outputs
@@ -163,16 +172,39 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    outputME42.reserve(tracks->size());
    //std::auto_ptr<RefToBaseVector<reco::RecoChargedCandidate>> outputTight(new RefToBaseVector<reco::RecoChargedCandidate>());
    //std::auto_ptr<RefToBaseVector<reco::RecoChargedCandidate>> outputLoose(new RefToBaseVector<reco::RecoChargedCandidate>());
+   //std::auto_ptr< edm::RefVector< std::vector<reco::RecoChargedCandidate> > > outputME42EtaRegion( new edm::RefVector< std::vector<reco::RecoChargedCandidate> > );
+   //std::auto_ptr< edm::RefToBaseVector<reco::RecoChargedCandidate> > outputME42EtaRegion( new edm::RefToBaseVector<reco::RecoChargedCandidate> );
 
    for (size_t i = 0, n = tracks->size(); i<n; ++i) {
       RefToBase<reco::RecoChargedCandidate> trackRef = tracks->refAt(i);
+      //const edm::Ref< std::vector<reco::RecoChargedCandidate> > CandRef = (*tracks)[i];
       const reco::RecoChargedCandidate & track = *trackRef;
       // push variables
       //if (isTightMuon(muon,vertices)) outputTight->push_back(trackRef);
       //if (muon::isLooseMuon(muon)) outputLoose->push_back(trackRef);
-      outputME42.push_back(isME42Trans(track.track())); 
+      //outputME42.push_back(isME42Trans(track.track())); 
+      
+      // what follows is an attempt to adapt to using PropagateToMuon class
+      if (trackRef->eta() > 1.0 && trackRef->eta() < 2.0) {
+         TrajectoryStateOnSurface tsos = muonPropagator->extrapolate(track);
+         if (tsos.isValid()) {
+            //std::cout << "---------------------------------------" << std::endl
+            //          << "propagation successful" << std::endl
+            //          << "eta: " << tsos.globalPosition().eta() << " phi: " << tsos.globalPosition().phi() << std::endl
+            //          << "x: " << tsos.globalPosition().x() << " y: " << tsos.globalPosition().y() << " z: " << tsos.globalPosition().z() << std::endl
+            //          << "isME42: " << isME42(tsos.globalPosition()) << std::endl;
+            outputME42.push_back(isME42(tsos.globalPosition()));
+            //if (tsos.globalPosition().eta()>1.2 && tsos.globalPosition().eta()<1.8) outputME42EtaRegion->push_back(trackRef);
+         }
+         else outputME42.push_back(0);
+      }
+      else {
+         //std::cout << "---------------------------------------" << std::endl
+         //          << "propagation failed" << std::endl;
+         outputME42.push_back(0);
+      }
    }
-   
+
 
    // convert to ValueMap and store
    std::auto_ptr<ValueMap<float> > valMapME42(new ValueMap<float>());
@@ -183,6 +215,9 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
    //iEvent.put(outputTight,"isTightMuon");
    //iEvent.put(outputLoose,"isLooseMuon");
+   //iEvent.put(outputME42EtaRegion,"ME42EtaRegion");
+   
+   delete muonPropagator;
 }
 
 // ------------ method to output detid regardless of type ---------------

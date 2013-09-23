@@ -9,6 +9,7 @@
 <use name="TrackingTools/TransientTrack"/>
 <use name="TrackingTools/Records"/>
 <use name="RecoMuon/StandAloneTrackFinder"/>
+<use name="MuonAnalysis/MuonAssociators"/>
 <use name="root"/>
 <use name="rootcore"/>
 <flags EDM_PLUGIN="1"/>
