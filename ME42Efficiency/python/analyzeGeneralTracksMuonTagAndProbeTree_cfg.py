@@ -15,14 +15,11 @@ options.parseArguments()
 
 
 # Choose analysis to run
-#ANALYSIS = 0 # all (not coded)
-#ANALYSIS = 1 # basic
+#ANALYSIS = 0 # (not coded)
+#ANALYSIS = 1 # all
 #ANALYSIS = 2 # ME42
-#ANALYSIS = 3 # NoME42
-#ANALYSIS = 4 # ME42Eta
-#ANALYSIS = 5 # NoME42Eta
-#ANALYSIS = 6 # ME42Phi
-#ANALYSIS = 7 # NoME42Phi
+#ANALYSIS = 3 # Eta
+#ANALYSIS = 4 # EtaNoME42
 
 # file variables
 if options.analysisVar==0:
@@ -34,20 +31,11 @@ elif options.analysisVar==2:
 	options.inputDirectoryName = "tagAndProbeTreeME42"
 	options.outputFile = "ME42TagAndProbeTreeAnalysisME42.root"
 elif options.analysisVar==3:
-	options.inputDirectoryName = "tagAndProbeTreeNoME42"
-	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42.root"
+	options.inputDirectoryName = "tagAndProbeTreeEta"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisEta.root"
 elif options.analysisVar==4:
-	options.inputDirectoryName = "tagAndProbeTreeME42Eta"
-	options.outputFile = "ME42TagAndProbeTreeAnalysisME42Eta.root"
-elif options.analysisVar==5:
-	options.inputDirectoryName = "tagAndProbeTreeNoME42Eta"
-	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42Eta.root"
-elif options.analysisVar==6:
-	options.inputDirectoryName = "tagAndProbeTreeME42Phi"
-	options.outputFile = "ME42TagAndProbeTreeAnalysisME42Phi.root"
-elif options.analysisVar==7:
-	options.inputDirectoryName = "tagAndProbeTreeNoME42Phi"
-	options.outputFile = "ME42TagAndProbeTreeAnalysisNoME42Phi.root"
+	options.inputDirectoryName = "tagAndProbeTreeEtaNoME42"
+	options.outputFile = "ME42TagAndProbeTreeAnalysisEtaNoME42.root"
 
 # Prepare Efficiency PSet
 EFFICIENCIES = cms.PSet( 
