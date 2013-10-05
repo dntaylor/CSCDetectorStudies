@@ -207,6 +207,8 @@ process.ZTagProbeME42 = process.ZTagProbe.clone(decay = cms.string("tags@+ trkCa
 process.trkCandsEtaNoME42 = process.trkCands.clone(cut = cms.string(PROBECUT+ETACUT+NOPHICUT))
 process.ZTagProbeEtaNoME42 = process.ZTagProbe.clone(decay = cms.string("tags@+ trkCandsEtaNoME42@-"))
 
+from CSCDetectorStudies.TagAndProbe.variables_cfi import *
+
 ###
 # produce tag and probe trees
 ###
@@ -214,13 +216,16 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
 	tagProbePairs = cms.InputTag("ZTagProbe"),
 	arbitration = cms.string("OneProbe"),
 	variables = cms.PSet(
-		pt = cms.string("pt"),
-		eta = cms.string("eta"),
-		phi = cms.string("phi"),
+		KinematicVariables,
+		#MuonIDVariables,
+		#pt = cms.string("pt"),
+		#eta = cms.string("eta"),
+		#phi = cms.string("phi"),
 		# external variable
 		isME42 = cms.InputTag("ME42MuonCands","isME42"),
 	),
 	flags = cms.PSet(
+		#MuonIDVariables,
 		trkPassingSta = cms.InputTag("trkPassingSta"),
 #		passingTightMuon = cms.InputTag("ME42MuonCands","isTightMuon"),
 #		passingLooseMuon = cms.InputTag("ME42MuonCands","isLooseMuon"),
