@@ -55,7 +55,7 @@ TCanvas* plot_single2(string var, string type)
    }
    if (var=="pt") {
       TString ME42FileName = "ME42TagAndProbeTreeAnalysisME42.root";
-      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisME42EtaNoME42.root";
+      TString NoME42FileName = "ME42TagAndProbeTreeAnalysisEtaNoME42.root";
       TString PlotName = "pt_PLOT";
       TString VarName = "p_{T}";
       if (type=="loose") {

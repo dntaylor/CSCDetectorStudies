@@ -6,7 +6,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
-options.inputFiles = "file:SingleMu_Run2012A_RECO.root"
+options.inputFiles = "file:SingleMu_Run2012C_RECO.root"
 options.outputFile = "ME42TagAndProbeTree.root"
 options.parseArguments()
 
@@ -31,9 +31,16 @@ TAGCUT = MUONCUT + \
 PROBECUT = MUONCUT + \
 	" && bestTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
 #	" && dxy(pv)<=0.2 && dz(pv)<=0.5"
-ETACUT = " && track.outerEta>1.2 && track.outerEta<1.8"
-PHICUT = " && track.outerPhi>75.*3.14159/180. && track.outerPhi<125.*3.14159/180."
-NOPHICUT = " && (track.outerPhi<75.*3.14159/180. || track.outerPhi>125.*3.14159/180.)"
+ETACUT = " && track.outerEta>1.25 && track.outerEta<1.75"
+PHICUT = " && track.outerPhi>76.*3.14159/180. && track.outerPhi<124.*3.14159/180."
+NOPHICUT = " && (track.outerPhi<74.*3.14159/180. || track.outerPhi>126.*3.14159/180.)"
+TIGHTMUON = "isGlobalMuon && isPFMuon" + \
+	" && globalTrack().normalizedChi2<10.0" + \
+	" && globalTrack().hitPattern().numberOfValidMuonHits > 0" + \
+	" && globalTrack().hitPattern().numberOfValidPixelHits>0" + \
+	" && numberOfMatchedStations>1" + \
+	" && globalTrack().hitPattern().trackerLayersWithMeasurement>5" #+ \
+LOOSEMUON = "isPFMuon && (isGlobalMuon || isTrackerMuon)"
 
 ZMASSCUT = "60.0 < mass < 120.0"
 
@@ -63,7 +70,7 @@ process.options = cms.untracked.PSet(
 #	SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
-#process.MessageLogger.suppressWarning = cms.untracked.vstring('ME42MuonCands')
+process.MessageLogger.suppressWarning = cms.untracked.vstring('ME42MuonCands')
 
 ###
 # datasets
@@ -79,8 +86,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 ###
 # only process good lumis
 ###
-import FWCore.PythonUtilities.LumiList as LumiList
-process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange()
+#import FWCore.PythonUtilities.LumiList as LumiList
+#process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange()
+#process.source.lumisToProcess = LumiList.LumiList(filename = './Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt').getVLuminosityBlockRange()
 
 ###
 # vertex and trigger filters
@@ -169,7 +177,7 @@ process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
 process.trkStaMatch = cms.EDProducer("TrivialDeltaRViewMatcher",
 	src = cms.InputTag("allTracks"), 
 	matched = cms.InputTag("staTracks"),
-	distMin = cms.double(0.1),
+	distMin = cms.double(0.3),
 )
 
 # get candidates from matching
@@ -183,7 +191,8 @@ process.trkPassingSta = cms.EDProducer("RecoChargedCandidateMatchedProbeMaker",
 # make z tag probe map
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 	decay = cms.string("tags@+ trkCands@-"),
-	cut = cms.string(ZMASSCUT),
+	cut = cms.string(ZMASSCUT + ' && abs(daughter(0).vz - daughter(1).vz)<0.2' + \
+	' && abs((daughter(0).vx^2 + daughter(0).vy^2)^0.5 - (daughter(1).vx^2 + daughter(1).vy^2)^0.5)<0.5'),
 )
 
 # with eta cut (temporary)
@@ -197,10 +206,6 @@ process.ZTagProbeME42 = process.ZTagProbe.clone(decay = cms.string("tags@+ trkCa
 # eta without ME42 cut (temporary)
 process.trkCandsEtaNoME42 = process.trkCands.clone(cut = cms.string(PROBECUT+ETACUT+NOPHICUT))
 process.ZTagProbeEtaNoME42 = process.ZTagProbe.clone(decay = cms.string("tags@+ trkCandsEtaNoME42@-"))
-
-
-###
-# produce tag and probe trees
 
 ###
 # produce tag and probe trees
@@ -229,11 +234,20 @@ process.tagAndProbeTreeME42 = process.tagAndProbeTree.clone(tagProbePairs="ZTagP
 process.tagAndProbeTreeEtaNoME42 = process.tagAndProbeTree.clone(tagProbePairs="ZTagProbeEtaNoME42")
 
 ###
+# muon id efficiency
+###
+process.staProbes = cms.EDFilter("MuonRefSelector",
+        src = cms.InputTag('muons'),
+        cut = cms.string(PROBECUT + " && isStandAloneMuon"),
+)
+
+
+###
 # path
 ###
 process.TagAndProbe = cms.Path(
-	process.fastFilter
-	* process.tags
+#	process.fastFilter
+	process.tags
 	* process.allTracks
 	* process.staTracks
 	* process.trkCands
