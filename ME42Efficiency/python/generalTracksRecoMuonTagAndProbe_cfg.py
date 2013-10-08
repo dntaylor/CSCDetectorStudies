@@ -239,12 +239,13 @@ process.tagAndProbeTreeME42 = process.tagAndProbeTree.clone(tagProbePairs="ZTagP
 process.tagAndProbeTreeEtaNoME42 = process.tagAndProbeTree.clone(tagProbePairs="ZTagProbeEtaNoME42")
 
 ###
-# muon id efficiency
+# chamber efficiency using standalone muons
 ###
-process.staProbes = cms.EDFilter("MuonRefSelector",
-        src = cms.InputTag('muons'),
-        cut = cms.string(PROBECUT + " && isStandAloneMuon"),
-)
+# rerun standalone muon producer excluding ME42 chamber CSCsegments
+# select tracks with at least 2 LCTs and  ME3 and ME1 or ME2 chambers
+# propagate track to ME4 and check if corrsponds to an ME42 LCT
+# define this as a passing probe
+# to check fake rate, match delta R to tracker track
 
 
 ###

@@ -151,7 +151,7 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    using namespace edm;
 
    // Handles to physics objects
-   Handle<View<reco::RecoChargedCandidate>> tracks;
+   Handle<View<reco::RecoCandidate>> tracks;
    iEvent.getByLabel(tracks_,tracks);
    Handle<reco::VertexCollection> vertices;
    iEvent.getByLabel(vertices_,vertices);
@@ -176,9 +176,9 @@ MuonME42CandidateProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    //std::auto_ptr< edm::RefToBaseVector<reco::RecoChargedCandidate> > outputME42EtaRegion( new edm::RefToBaseVector<reco::RecoChargedCandidate> );
 
    for (size_t i = 0, n = tracks->size(); i<n; ++i) {
-      RefToBase<reco::RecoChargedCandidate> trackRef = tracks->refAt(i);
+      RefToBase<reco::RecoCandidate> trackRef = tracks->refAt(i);
       //const edm::Ref< std::vector<reco::RecoChargedCandidate> > CandRef = (*tracks)[i];
-      const reco::RecoChargedCandidate & track = *trackRef;
+      const reco::RecoCandidate & track = *trackRef;
       // push variables
       //if (isTightMuon(muon,vertices)) outputTight->push_back(trackRef);
       //if (muon::isLooseMuon(muon)) outputLoose->push_back(trackRef);
