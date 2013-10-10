@@ -14,47 +14,63 @@ options.register ('inputDirectoryName', 'tagAndProbeTree', VarParsing.multiplici
 options.parseArguments()
 
 ###
-# Analyzer
+# Create efficiencies
 ###
+PTBINME42 = cms.PSet(
+   isME42Region = cms.vstring("true"),
+   eta = cms.vdouble(1.2,1.8),
+   pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
+)
+
+PTBINNOME42 = PTBINME42.clone(isME42Region = cms.vstring("false"))
+
+ISME42BIN = cms.PSet(
+   eta = cms.vdouble(1.2,1.8),
+   isME42 = cms.vdouble(-0.5,0.5,1.5),
+)
+
+EFFPSET = cms.PSet(
+   EfficiencyCategoryAndState = cms.vstring(),
+   UnbinnedVariables = cms.vstring("mass"),
+   BinnedVariables = cms.PSet(),
+   BinToPDFmap = cms.vstring("voigtianPlusExponential")
+)
+
+PTTIGHTME42 = EFFPSET.clone(EfficiencyCategoryAndState = cms.vstring("isTightMuon","true"), BinnedVariables = PTBINME42)
+PTTIGHTNOME42 = PTTIGHTME42.clone(BinnedVariables = PTBINNOME42)
+PTLOOSEME42 = PTTIGHTME42.clone(EfficiencyCategoryAndState = cms.vstring("isLooseMuon","true"))
+PTLOOSENOME42 = PTLOOSEME42.clone(BinnedVariables = PTBINNOME42)
+
+ISME42TIGHT = PTTIGHTME42.clone(BinnedVariables = ISME42BIN)
+ISME42LOOSE = PTLOOSEME42.clone(BinnedVariables = ISME42BIN)
+
+EFF = cms.PSet(
+   pt_tight_ME42 = PTTIGHTME42,
+   pt_tight_NoME42 = PTTIGHTNOME42,
+   pt_loose_ME42 = PTLOOSEME42,
+   pt_loose_NoME42 = PTLOOSENOME42,
+   isME42_tight = ISME42TIGHT,
+   isME42_loose = ISME42LOOSE,
+)
 
 # Prepare Efficiency PSet
 Eff = cms.PSet(
     # pt
-    pt_ME42_tight = cms.PSet(
+    pt_tight = cms.PSet(
         EfficiencyCategoryAndState = cms.vstring("isTightMuon","true"),
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
-            isME42 = cms.vdouble(0.5,1.5),
+            isME42Region = cms.vstring("true"),
             eta = cms.vdouble(1.2,1.8),
             pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
         ),
         BinToPDFmap = cms.vstring("voigtianPlusExponential")
     ),
-    pt_ME42_loose = cms.PSet(
+    pt_loose = cms.PSet(
         EfficiencyCategoryAndState = cms.vstring("isLooseMuon","true"),
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
-            isME42 = cms.vdouble(0.5,1.5),
-            eta = cms.vdouble(1.2,1.8),
-            pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
-        ),
-        BinToPDFmap = cms.vstring("voigtianPlusExponential")
-    ),
-    pt_NoME42_tight = cms.PSet(
-        EfficiencyCategoryAndState = cms.vstring("isTightMuon","true"),
-        UnbinnedVariables = cms.vstring("mass"),
-        BinnedVariables = cms.PSet(
-            isME42 = cms.vdouble(-0.5,0.5),
-            eta = cms.vdouble(1.2,1.8),
-            pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
-        ),
-        BinToPDFmap = cms.vstring("voigtianPlusExponential")
-    ),
-    pt_NoME42_loose = cms.PSet(
-        EfficiencyCategoryAndState = cms.vstring("isLooseMuon","true"),
-        UnbinnedVariables = cms.vstring("mass"),
-        BinnedVariables = cms.PSet(
-            isME42 = cms.vdouble(-0.5,0.5),
+            isME42Region = cms.vstring("true"),
             eta = cms.vdouble(1.2,1.8),
             pt = cms.vdouble(20.0, 40.0, 60.0, 80.0, 100.0, 500.0),
         ),
@@ -66,7 +82,7 @@ Eff = cms.PSet(
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
             eta = cms.vdouble(1.2,1.8),
-            isME42 = cms.vdouble(-0.5,1.5),
+            isME42 = cms.vdouble(-0.5,0.5,1.5),
         ),
         BinToPDFmap = cms.vstring("voigtianPlusExponential")
     ),
@@ -75,11 +91,15 @@ Eff = cms.PSet(
         UnbinnedVariables = cms.vstring("mass"),
         BinnedVariables = cms.PSet(
             eta = cms.vdouble(1.2,1.8),
-            isME42 = cms.vdouble(-0.5,1.5),
+            isME42 = cms.vdouble(-0.5,0.5,1.5),
         ),
         BinToPDFmap = cms.vstring("voigtianPlusExponential")
     ),
 )
+
+###
+# prepare analyzer
+###
 
 process = cms.Process("TagProbe")
 
@@ -105,8 +125,11 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
     ),
     Categories = cms.PSet(
        MuonIDCategories,
+       isME42Region = cms.vstring("ME42 Region","dummy[true=1,false=0]"),
     ),
     Cuts = cms.PSet(
+        eta12 = cms.vstring("lower ME42 cut","eta","1.2"),
+        eta18 = cms.vstring("upper ME42 cut","eta","1.8"),
     ),
     PDFs = cms.PSet(
        gaussPlusLinear = cms.vstring(
@@ -132,8 +155,7 @@ process.TagProbeFitTreeAnalyzer = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
           "signalFractionInPassing[0.9]"
        ),
     ),
-
-    Efficiencies = Eff
+    Efficiencies = EFF
 )
 
 #process.TagProbeFitTreeAnalyzerSta = TagProbeFitTreeAnalyzer.clone(

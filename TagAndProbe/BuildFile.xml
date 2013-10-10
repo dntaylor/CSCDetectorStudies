@@ -1,0 +1,11 @@
+<use   name="roofit"/>
+<use   name="DataFormats/RecoCandidate"/>
+<use   name="FWCore/PluginManager"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/Utilities"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="CondCore/PluginSystem"/>
+<use   name="MuonAnalysis/MuonAssociators"/>
+<export>
+</export>

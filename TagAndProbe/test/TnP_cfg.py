@@ -69,7 +69,7 @@ process.goodVertexFilter = cms.EDFilter("VertexSelector",
 )
 process.noScraping = cms.EDFilter("FilterOutScraping",
     applyfilter = cms.untracked.bool(True),
-    debugOn = cms.untracked.bool(False), ## Or 'True' to get some per-event info
+    debugOn = cms.untracked.bool(False),
     numtrack = cms.untracked.uint32(10),
     thresh = cms.untracked.double(0.25)
 )
@@ -105,17 +105,12 @@ process.mergedMuons = cms.EDProducer("CaloMuonMerger",
     tracksCut    = cms.string("pt > 3"),
 )
 
-process.mergedMuonsSta = process.mergedMuons.clone(
-    muons = "mergedMuons",
-    tracks = "standAloneMuons",
-)
-
 process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
 ## with some customization
 process.muonMatchHLTL2.maxDeltaR = 0.3 # Zoltan tuning - it was 0.5
 process.muonMatchHLTL3.maxDeltaR = 0.1
 from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import *
-changeRecoMuonInput(process, "mergedMuonsSta")
+changeRecoMuonInput(process, "mergedMuons")
 #useExtendedL1Match(process)
 #addHLTL1Passthrough(process)
 
@@ -148,9 +143,7 @@ process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
 ###
 
 process.ME42MuonCands = cms.EDProducer("MuonME42CandidateProducer",
-    TrackCollection = cms.InputTag("probeMuons"),
-    VertexCollection = cms.InputTag("offlinePrimaryVertices"),
-    BeamSpot = cms.InputTag("offlineBeamSpot"),
+    src = cms.InputTag("probeMuons"),
     MuonPropagator = cms.PSet(
         useSimpleGeometry = cms.bool(True),
         useStation2 = cms.bool(True),
@@ -171,11 +164,13 @@ process.tagAndProbeTree = cms.EDAnalyzer("TagProbeFitTreeProducer",
     arbitration = cms.string("OneProbe"),
     variables = cms.PSet(
         KinematicVariables,
+        TriggerVariables,
         # external variable
         isME42 = cms.InputTag("ME42MuonCands","isME42"),
     ),
     flags = cms.PSet(
         MuonIDVariables,
+        isME42Region = cms.InputTag("ME42MuonCands"), 
     ),
     addRunLumiInfo = cms.bool(True),
     isMC = cms.bool(False),
@@ -191,100 +186,167 @@ process.tnpTrkSequence = cms.Sequence(
 )
 
 ###
-# standalone tnp
+# standalone/tracker tnp
 ###
 process.probeMuonsSta = cms.EDFilter("PATMuonSelector", # select standalone tracks
     src = cms.InputTag("patMuonsWithTrigger"),
     cut = cms.string("outerTrack.isNonnull && pt>20 && abs(eta)<2.4"),
 )
 
-process.pCutTracks = cms.EDFilter("TrackSelector", 
-    src = cms.InputTag("generalTracks"),      
-    cut = cms.string("pt > 3"),
-)
-
-process.tkTracks = cms.EDProducer("ConcreteChargedCandidateProducer", 
-    src = cms.InputTag("pCutTracks"),
-    particleType = cms.string("mu+"),
-)
-
-process.staTracks = cms.EDProducer("ConcreteChargedCandidateProducer",
-    src = cms.InputTag("standAloneMuons"),
-    particleType = cms.string("mu+"),
-)
-
-process.tkCands = cms.EDFilter("RecoChargedCandidateRefSelector",
-    src = cms.InputTag("tkTracks"),
-    cut = cms.string("pt>3"),
-)
-
-process.staCands = cms.EDFilter("RecoChargedCandidateRefSelector",
-    src = cms.InputTag("staTracks"),
-    cut = cms.string("pt>20 && abs(eta)<2.4"),
-)
-
-process.staTrkMatch = cms.EDProducer("TrivialDeltaRViewMatcher",
-    src = cms.InputTag("staTracks"),
-    matched = cms.InputTag("tkTracks"),
-    distMin = cms.double(0.3),
-)
-
-process.staPassingTrk = cms.EDProducer("RecoChargedCandidateMatchedProbeMaker",
-    Matched = cms.untracked.bool(True),
-    ReferenceSource = cms.untracked.InputTag("tkCands"),
-    ResMatchMapSource = cms.untracked.InputTag("staTrkMatch"),
-    CandidateSource = cms.untracked.InputTag("staCands"),
-)
-
-process.tpPairsSta = process.ZTagProbe.clone(decay = "tagMuons@+ probeMuonsSta@-", cut = '60 < mass < 120')
+process.ZTagProbeSta = process.ZTagProbe.clone(decay = "tagMuons@+ probeMuonsSta@-", cut = '60 < mass < 120')
 
 process.ME42MuonCandsSta = cms.EDProducer("MuonME42CandidateProducer",
-    TrackCollection = cms.InputTag("probeMuonsSta"),
-    VertexCollection = cms.InputTag("offlinePrimaryVertices"),
-    BeamSpot = cms.InputTag("offlineBeamSpot"),
+    src = cms.InputTag("probeMuonsSta"),
     MuonPropagator = cms.PSet(
-       useSimpleGeometry = cms.bool(True),
-       useStation2 = cms.bool(True),
-       useStation4 = cms.bool(True),
-       fallbackToME1 = cms.bool(False),
-       fallback = cms.bool(False),
-       useTrack = cms.string("muon"),
-       useState = cms.string("outermost"),
-       cosmicPropagationHypothesis = cms.bool(False),
+        useSimpleGeometry = cms.bool(True),
+        useStation2 = cms.bool(True),
+        useStation4 = cms.bool(True),
+        fallbackToME1 = cms.bool(False),
+        fallback = cms.bool(False),
+        useTrack = cms.string("muon"),
+        useState = cms.string("outermost"),
+        cosmicPropagationHypothesis = cms.bool(False),
     ),
 )
 
-
-process.tagAndProbeTreeSta = process.tagAndProbeTree.clone(
-    tagProbePairs = "tpPairsSta",
+process.tagAndProbeTreeSta = cms.EDAnalyzer("TagProbeFitTreeProducer",
+    tagProbePairs = cms.InputTag("ZTagProbeSta"),
+    arbitration = cms.string("OneProbe"),
     variables = cms.PSet(
-        KinematicVariables, 
-        #standAloneVariables,
+        KinematicVariables,
+        TriggerVariables,
         # external variable
         isME42 = cms.InputTag("ME42MuonCandsSta","isME42"),
     ),
     flags = cms.PSet(
         MuonIDVariables,
-    #    hasTrack = cms.string("track.isNonnull"),
-    #    staPassingTrk = cms.InputTag("staPassingTrk"),
-    #    hasME42LCT = cms.InputTag("track.hitPattern.getMuonStation(track.hitPattern.getHitPattern(track.hitPattern.numberOfHits-1))==4" +\
-    #        " && track.hitPattern.getCSCRing(track.hitPattern.getHitPattern(track.hitPattern.numberOfHits-1))==2"),
+        isME42Region = cms.InputTag("ME42MuonCandsSta"),
     ),
+    addRunLumiInfo = cms.bool(True),
+    isMC = cms.bool(False),
 )
 
 process.tnpStaSequence = cms.Sequence(
     process.probeMuonsSta
-    * process.pCutTracks
-    * process.tkTracks
-    * process.staTracks
-    * process.tkCands
-    * process.staCands
-    * process.staTrkMatch
-    * process.staPassingTrk
-    * process.tpPairsSta
+    * process.ZTagProbeSta
     * process.ME42MuonCandsSta
     * process.tagAndProbeTreeSta
 )
+
+
+#process.pCutTracks = cms.EDFilter("TrackSelector", 
+#    src = cms.InputTag("generalTracks"),      
+#    cut = cms.string("pt > 3"),
+#)
+#
+#process.trkTracks = cms.EDProducer("ConcreteChargedCandidateProducer", 
+#    src = cms.InputTag("pCutTracks"),
+#    particleType = cms.string("mu+"),
+#)
+#
+#process.staTracks = cms.EDProducer("ConcreteChargedCandidateProducer",
+#    src = cms.InputTag("standAloneMuons"),
+#    particleType = cms.string("mu+"),
+#)
+#
+#process.trkCands = cms.EDFilter("RecoChargedCandidateRefSelector",
+#    src = cms.InputTag("trkTracks"),
+#    cut = cms.string("pt>20 && abs(eta)<2.4"),
+#)
+#
+#process.staCands = cms.EDFilter("RecoChargedCandidateRefSelector",
+#    src = cms.InputTag("staTracks"),
+#    cut = cms.string("pt>20 && abs(eta)<2.4"),
+#)
+#
+#process.staTrkMatch = cms.EDProducer("TrivialDeltaRViewMatcher",
+#    src = cms.InputTag("staTracks"),
+#    matched = cms.InputTag("trkTracks"),
+#    distMin = cms.double(0.3),
+#)
+#
+#process.trkStaMatch = process.staTrkMatch.clone( src = "trkTracks", matched = "staTracks")
+#
+#process.staPassingTrk = cms.EDProducer("RecoChargedCandidateMatchedProbeMaker",
+#    Matched = cms.untracked.bool(True),
+#    ReferenceSource = cms.untracked.InputTag("trkCands"),
+#    ResMatchMapSource = cms.untracked.InputTag("staTrkMatch"),
+#    CandidateSource = cms.untracked.InputTag("staCands"),
+#)
+#
+#process.trkPassingSta = process.staPassingTrk.clone( ReferenceSource = "staCands", ResMatchMapSource = "trkStaMatch", CandidateSource = "trkCands")
+#
+#process.tpPairsSta = process.ZTagProbe.clone(decay = "tagMuons@+ staCands@-", cut = '60 < mass < 120')
+#process.tpPairsTrk = process.ZTagProbe.clone(decay = "tagMuons@+ trkCands@-", cut = '60 < mass < 120')
+#
+#process.ME42MuonCandsSta = cms.EDProducer("MuonME42CandidateProducer",
+#    src = cms.InputTag("staTracks"),
+#    MuonPropagator = cms.PSet(
+#       useSimpleGeometry = cms.bool(True),
+#       useStation2 = cms.bool(True),
+#       useStation4 = cms.bool(True),
+#       fallbackToME1 = cms.bool(False),
+#       fallback = cms.bool(False),
+#       useTrack = cms.string("tracker"),
+#       useState = cms.string("outermost"),
+#       cosmicPropagationHypothesis = cms.bool(False),
+#    ),
+#)
+#
+#process.ME42MuonCandsTrk = process.ME42MuonCandsSta.clone(src = "trkTracks")
+#
+#
+#process.tagAndProbeTreeSta = process.tagAndProbeTree.clone(
+#    tagProbePairs = "tpPairsSta",
+#    variables = cms.PSet(
+#        KinematicVariables, 
+#        #standAloneVariables,
+#        # external variable
+#        isME42 = cms.InputTag("ME42MuonCandsSta","isME42"),
+#    ),
+#    flags = cms.PSet(
+#    #    MuonIDVariables,
+#    #    hasTrack = cms.string("track.isNonnull"),
+#        staPassingTrk = cms.InputTag("staPassingTrk"),
+#        isME42Region = cms.InputTag("ME42MuonCandsSta"),
+#    ),
+#)
+#
+#process.tagAndProbeTreeTrk = process.tagAndProbeTree.clone(
+#    tagProbePairs = "tpPairsTrk",
+#    variables = cms.PSet(
+#        KinematicVariables,
+#        #standAloneVariables,
+#        # external variable
+#        isME42 = cms.InputTag("ME42MuonCandsTrk","isME42"),
+#    ),
+#    flags = cms.PSet(
+#    #    MuonIDVariables,
+#    #    hasTrack = cms.string("track.isNonnull"),
+#        trkPassingSta = cms.InputTag("trkPassingSta"),
+#        isME42Region = cms.InputTag("ME42MuonCandsTrk"),
+#    ),
+#)
+
+#process.tnpStaSequence = cms.Sequence(
+#    #process.probeMuonsSta
+#    process.pCutTracks
+#    * process.trkTracks
+#    * process.staTracks
+#    * process.trkCands
+#    * process.staCands
+#    * process.staTrkMatch
+#    * process.staPassingTrk
+#    * process.tpPairsSta
+#    * process.ME42MuonCandsSta
+#    * process.tagAndProbeTreeSta
+#
+#    * process.trkStaMatch
+#    * process.trkPassingSta
+#    * process.tpPairsTrk
+#    * process.ME42MuonCandsTrk
+#    * process.tagAndProbeTreeTrk
+#)
 
 ###
 # path
@@ -293,7 +355,6 @@ process.tnpStaSequence = cms.Sequence(
 process.TagAndProbe = cms.Path(
     process.fastFilter
     * process.mergedMuons
-    * process.mergedMuonsSta
     * process.patMuonsWithTriggerSequence
     * process.tnpTrkSequence
     * process.tnpStaSequence
