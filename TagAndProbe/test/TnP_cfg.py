@@ -129,7 +129,7 @@ process.oneTag  = cms.EDFilter("CandViewCountFilter",
 
 process.probeMuons = cms.EDFilter("PATMuonSelector", # select tracker tracks
     src = cms.InputTag("patMuonsWithTrigger"),
-    cut = cms.string("innerTrack.isNonnull && pt>20 && abs(eta)<2.4 && bestTrack.hitPattern.trackerLayersWithMeasurement>5"),
+    cut = cms.string("innerTrack.isNonnull && abs(eta)>1.0 && abs(eta)<2.4 && bestTrack.hitPattern.trackerLayersWithMeasurement>5"),
 )
 
 process.ZTagProbe = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -190,7 +190,7 @@ process.tnpTrkSequence = cms.Sequence(
 ###
 process.probeMuonsSta = cms.EDFilter("PATMuonSelector", # select standalone tracks
     src = cms.InputTag("patMuonsWithTrigger"),
-    cut = cms.string("outerTrack.isNonnull && pt>20 && abs(eta)<2.4"),
+    cut = cms.string("outerTrack.isNonnull && abs(eta)>1.0 && abs(eta)<2.4"),
 )
 
 process.ZTagProbeSta = process.ZTagProbe.clone(decay = "tagMuons@+ probeMuonsSta@-", cut = '60 < mass < 120')
@@ -215,6 +215,7 @@ process.tagAndProbeTreeSta = cms.EDAnalyzer("TagProbeFitTreeProducer",
     variables = cms.PSet(
         KinematicVariables,
         TriggerVariables,
+        standAloneVariables,
         # external variable
         isME42 = cms.InputTag("ME42MuonCandsSta","isME42"),
     ),

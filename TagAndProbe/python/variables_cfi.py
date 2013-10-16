@@ -28,7 +28,7 @@ MuonIDVariables = cms.PSet(
 
 # standalone muon variables
 standAloneVariables = cms.PSet(
-   # muonStationsWithValidHits = cms.string("? outerTrack.isNull() ? -1 : outerTrack.hitPattern.muonStationsWithValidHits()"),
+   muonStationsWithValidHits = cms.string("? outerTrack.isNull() ? -1 : outerTrack.hitPattern.muonStationsWithValidHits()"),
 )
 
 # trigger variables
