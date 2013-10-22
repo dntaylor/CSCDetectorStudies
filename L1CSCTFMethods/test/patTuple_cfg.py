@@ -72,19 +72,9 @@ process.prePATSequence= cms.Sequence(
     process.preMuonSequence
 )
 
-from CSCDetectorStudies.L1CSCTFMethods.variables_cfi import *
-
-process.skim = cms.EDProducer(
-    "CandViewNtpProducer",
-    src = cms.InputTag("patMuonsWithTrigger"),
-    lazyParser = cms.untracked.bool(True),
-    prefix = cms.untracked.string("mu"),
-    eventInfo = cms.untracked.bool(True),
-    variables = cms.VPSet(
-        variables
-    )
+process.skim = cms.EDAnalyzer("L1CSCTFMethods",
+    muons = cms.InputTag("patMuonsWithTrigger"),
 )
-
 
 ## let it run
 process.p = cms.Path(
@@ -103,21 +93,13 @@ process.maxEvents.input = 100
 process.out.outputCommands = [ 'drop *',
 
         # pat candidate -------------
-        #'keep *_patMuons_*_*',
-        #'keep *_patMuonsWithTrigger_*_*',
+        'keep *_patMuons_*_*',
+        'keep *_patMuonsWithTrigger_*_*',
         
         # Trigger ---------------------
-        #'keep *_patTrigger*_*_*',
-        #'keep *_TriggerResults_*_*',
-        #'keep *_vertexMapProd_*_*',
-
-        # Skim ----------------------
-        'keep *_skim_*_*',
+        'keep *_patTrigger*_*_*',
+        'keep *_TriggerResults_*_*',
+        'keep *_vertexMapProd_*_*',
  ]
 process.out.fileName = options.outputFile
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
-
-process.TFileService = cms.Service("TFileService",
-    fileName = cms.string(options.outputFile),
-)
-

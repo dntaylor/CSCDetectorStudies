@@ -18,6 +18,9 @@ process = cms.Process("SingleMuSkim")
 process.load("Configuration.StandardSequences.Services_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 ###
 # options
@@ -36,17 +39,18 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string(options.outputFile),
+)
 
-from PhysicsTools.PatAlgos.patTemplate_cfg import *
-from PhysicsTools.PatAlgos.tools.coreTools import *
-removeMCMatching(process, ['All'])
-#removeAllPATObjectsBut(process, ['Muons'])
-
+###
+# Tag and probe selections
+###
 from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 process.mergedMuons = cms.EDProducer("CaloMuonMerger",
-    mergeTracks = cms.bool(True),
+    mergeTracks = cms.bool(False),
     mergeCaloMuons = cms.bool(False), # AOD
     muons     = cms.InputTag("muons"),
     caloMuons = cms.InputTag("calomuons"),
@@ -67,13 +71,15 @@ changeRecoMuonInput(process, "mergedMuons")
 #useExtendedL1Match(process)
 #addHLTL1Passthrough(process)
 
-
-process.out.outputCommands = cms.untracked.vstring(
-	'keep *',
+###
+# make skim
+###
+process.skim = cms.EDAnalyzer("NtupleProducer",
+    muons = cms.InputTag("patMuonsWithTrigger"),
 )
 
 process.p = cms.Path(
-	process.patDefaultSequence *
-	process.mergedMuons
+    process.mergedMuons
+    * process.patMuonsWithTriggerSequence
+    * process.skim
 )
-

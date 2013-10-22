@@ -7,7 +7,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
 options.inputFiles = "file:SingleMu_Run2012C_RECO.root"
-options.outputFile = "SingleMu_Run2012C_Skim.root"
+options.outputFile = "L1CSCTF_SingleMu_Run2012C_Skim.root"
 options.parseArguments()
 
 ###
@@ -18,6 +18,9 @@ process = cms.Process("SingleMuSkim")
 process.load("Configuration.StandardSequences.Services_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 ###
 # options
@@ -36,24 +39,25 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string(options.outputFile),
+)
 
-from PhysicsTools.PatAlgos.patTemplate_cfg import *
-from PhysicsTools.PatAlgos.tools.coreTools import *
-removeMCMatching(process, ['All'])
-#removeAllPATObjectsBut(process, ['Muons'])
-
+###
+# Tag and probe selections
+###
 from RecoMuon.MuonIdentification.calomuons_cfi import calomuons;
 process.mergedMuons = cms.EDProducer("CaloMuonMerger",
-    mergeTracks = cms.bool(True),
+    mergeTracks = cms.bool(False),
     mergeCaloMuons = cms.bool(False), # AOD
     muons     = cms.InputTag("muons"),
     caloMuons = cms.InputTag("calomuons"),
     tracks    = cms.InputTag("generalTracks"),
     minCaloCompatibility = calomuons.minCaloCompatibility,
     ## Apply some minimal pt cut
-    muonsCut     = cms.string("pt > 2 && track.isNonnull"),
+    muonsCut     = cms.string("pt > 2 && track.isNonnull && eta>1.0"),
     caloMuonsCut = cms.string("pt > 2"),
     tracksCut    = cms.string("pt > 2"),
 )
@@ -67,13 +71,32 @@ changeRecoMuonInput(process, "mergedMuons")
 #useExtendedL1Match(process)
 #addHLTL1Passthrough(process)
 
-
-process.out.outputCommands = cms.untracked.vstring(
-	'keep *',
+###
+# make skim
+###
+from CSCDetectorStudies.L1CSCTFMethods.variables_cfi import *
+process.skim = cms.EDProducer(
+    "CandViewNtpProducer", 
+    src = cms.InputTag("patMuonsWithTrigger"),
+    lazyParser = cms.untracked.bool(True),
+    prefix = cms.untracked.string("mu"),
+    eventInfo = cms.untracked.bool(False),
+    variables = cms.VPSet(
+        variables
+    )  
 )
 
 process.p = cms.Path(
-	process.patDefaultSequence *
-	process.mergedMuons
+    process.mergedMuons
+    * process.patMuonsWithTriggerSequence
+    * process.skim
 )
 
+process.out = cms.OutputModule("PoolOutputModule",
+    outputCommands = cms.untracked.vstring('drop *',
+        'keep *_skim_*_*',
+    ),
+    fileName = cms.untracked.string(options.outputFile)
+)
+
+process.outpath = cms.EndPath(process.out)

@@ -29,6 +29,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "PhysicsTools/UtilAlgos/interface/BasicAnalyzer.h"
 // dataformat include files
 
 // Geometry
@@ -43,26 +44,24 @@
 //
 // class declaration
 //
+class TFile;
+class TTree;
 
-class L1CSCTFMethods : public edm::EDAnalyzer {
+class L1CSCTFMethods : public edm::BasicAnalyzer {
    public:
-      explicit L1CSCTFMethods(const edm::ParameterSet&);
+      L1CSCTFMethods(const edm::ParameterSet& pset, TFileDirectory& fs);
       ~L1CSCTFMethods();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
+      void beginJob();
+      void analyze(const edm::Event& event);
+      void endJob();
 
    private:
-      virtual void beginJob() ;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&);
-      virtual void endJob() ;
-
-      virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-      virtual void endRun(edm::Run const&, edm::EventSetup const&);
-      virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
-      virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       // ----------member data ---------------------------
+      edm::InputTag muons_;
+
+      std::map<std::string, TH1*> hists_;
 };
 
 //
