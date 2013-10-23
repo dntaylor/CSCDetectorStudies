@@ -57,7 +57,7 @@ process.mergedMuons = cms.EDProducer("CaloMuonMerger",
     tracks    = cms.InputTag("generalTracks"),
     minCaloCompatibility = calomuons.minCaloCompatibility,
     ## Apply some minimal pt cut
-    muonsCut     = cms.string("pt > 2 && track.isNonnull && eta>0.9"),
+    muonsCut     = cms.string("pt > 2 && track.isNonnull"),
     caloMuonsCut = cms.string("pt > 2"),
     tracksCut    = cms.string("pt > 2"),
 )
@@ -71,15 +71,21 @@ changeRecoMuonInput(process, "mergedMuons")
 #useExtendedL1Match(process)
 #addHLTL1Passthrough(process)
 
+process.skimMuons = cms.EDFilter("PATMuonSelector",
+    src = cms.InputTag("patMuonsWithTrigger"),
+    cut = cms.string("eta>1.0 && eta<2.0 && userCand('muonL1Info').isNonnull"),
+)
+
 ###
 # make skim
 ###
 process.skim = cms.EDAnalyzer("NtupleProducer",
-    muons = cms.InputTag("patMuonsWithTrigger"),
+    muons = cms.InputTag("skimMuons"),
 )
 
 process.p = cms.Path(
     process.mergedMuons
     * process.patMuonsWithTriggerSequence
+    * process.skimMuons
     * process.skim
 )
