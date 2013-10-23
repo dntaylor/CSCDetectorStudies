@@ -29,11 +29,6 @@ namespace CSCAnalysis
 
        muCSCStation.clear();
        muCSCRing.clear();
-       muDTStation.clear();
-       muDTSuperLayer.clear();
-       muRPCStation.clear();
-       muRPCLayer.clear();
-       muRPCRegion.clear();
     }
 
     int muonSize;
@@ -68,11 +63,6 @@ namespace CSCAnalysis
     // hit pattern
     std::vector< std::vector<int> > muCSCStation;
     std::vector< std::vector<int> > muCSCRing;
-    std::vector< std::vector<int> > muDTStation;
-    std::vector< std::vector<int> > muDTSuperLayer;
-    std::vector< std::vector<int> > muRPCStation;
-    std::vector< std::vector<int> > muRPCLayer;
-    std::vector< std::vector<int> > muRPCRegion;
   };
 }
 

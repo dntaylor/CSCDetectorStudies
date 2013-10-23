@@ -6,7 +6,7 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
-options.inputFiles = "file:SingleMu_Run2012C_RECO.root"
+options.inputFiles = "file:/hdfs/store/data/Run2012C/SingleMu/RECO/22Jan2013-v1/20000/1AD3ED3F-BE74-E211-9363-00259073E398.root"
 options.outputFile = "SingleMu_Run2012C_Skim.root"
 options.parseArguments()
 
@@ -57,7 +57,7 @@ process.mergedMuons = cms.EDProducer("CaloMuonMerger",
     tracks    = cms.InputTag("generalTracks"),
     minCaloCompatibility = calomuons.minCaloCompatibility,
     ## Apply some minimal pt cut
-    muonsCut     = cms.string("pt > 2 && track.isNonnull"),
+    muonsCut     = cms.string("pt > 2 && track.isNonnull && eta>0.9"),
     caloMuonsCut = cms.string("pt > 2"),
     tracksCut    = cms.string("pt > 2"),
 )

@@ -52,30 +52,16 @@ void CSCAnalysis::CSCPatMuonsWithTrigger::Set(const edm::Event& e, const edm::In
 
          // hitpattern information
          reco::HitPattern hp = mu1->outerTrack()->hitPattern();
-         std::vector<int> cscStation, cscRing, dtStation, dtSuperLayer, rpcStation, rpcLayer, rpcRegion;
+         std::vector<int> cscStation, cscRing;
          for (int hit=0; hit<hp.numberOfValidHits(); hit++) {
             uint32_t p = hp.getHitPattern(hit);
             if (hp.muonCSCHitFilter(p)) {
                cscStation.push_back(hp.getMuonStation(p));
                cscRing.push_back(hp.getCSCRing(p));
             }
-            if (hp.muonDTHitFilter(p)) {
-               dtStation.push_back(hp.getMuonStation(p));
-               dtSuperLayer.push_back(hp.getDTSuperLayer(p));
-            }
-            if (hp.muonRPCHitFilter(p)) {
-               rpcStation.push_back(hp.getMuonStation(p));
-               rpcLayer.push_back(hp.getRPCLayer(p));
-               rpcRegion.push_back(hp.getRPCregion(p));
-            }
          }
          pmwt_.muCSCStation.push_back(cscStation);
          pmwt_.muCSCStation.push_back(cscRing);
-         pmwt_.muCSCStation.push_back(dtStation);
-         pmwt_.muCSCStation.push_back(dtSuperLayer);
-         pmwt_.muCSCStation.push_back(rpcStation);
-         pmwt_.muCSCStation.push_back(rpcLayer);
-         pmwt_.muCSCStation.push_back(rpcRegion);
       }
    }
 
