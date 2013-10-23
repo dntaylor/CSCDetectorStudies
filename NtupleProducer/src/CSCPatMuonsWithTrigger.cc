@@ -61,7 +61,7 @@ void CSCAnalysis::CSCPatMuonsWithTrigger::Set(const edm::Event& e, const edm::In
             }
          }
          pmwt_.muCSCStation.push_back(cscStation);
-         pmwt_.muCSCStation.push_back(cscRing);
+         pmwt_.muCSCRing.push_back(cscRing);
       }
    }
 
