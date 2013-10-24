@@ -23,12 +23,27 @@ namespace CSCAnalysis
        muPhi.clear();
        muCharge.clear();
 
+       muGlobalMuon.clear();
+       muTrackerMuon.clear();
+       muCaloMuon.clear();
+       muStandAloneMuon.clear();
+       muPFMuon.clear();
+
+       muNumberOfMatchedStations.clear();
+       muNumberOfChambers.clear();
+
        muL1pt.clear();
        muL1dr.clear();
        muL1q.clear();
 
-       muCSCStation.clear();
-       muCSCRing.clear();
+       muOuterPt.clear();
+       muOuterEta.clear();
+       muOuterPhi.clear();
+
+       //muCSCStation.clear();
+       //muCSCRing.clear();
+       muFirstStation.clear();
+       muLastStation.clear();
     }
 
     int muonSize;
@@ -61,8 +76,10 @@ namespace CSCAnalysis
     std::vector<float> muOuterPhi;
 
     // hit pattern
-    std::vector< std::vector<int> > muCSCStation;
-    std::vector< std::vector<int> > muCSCRing;
+    //std::vector< std::vector<int> > muCSCStation;
+    //std::vector< std::vector<int> > muCSCRing;
+    std::vector<int> muFirstStation;
+    std::vector<int> muLastStation;
   };
 }
 

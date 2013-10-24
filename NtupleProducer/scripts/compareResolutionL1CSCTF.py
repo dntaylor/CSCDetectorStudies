@@ -123,34 +123,18 @@ normalizations1 = [1,1]
 #             selections,labels,normalizations,
 #             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 #
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt0-5","muEta>1.25&&muEta<1.75&&muL1pt>0&&muL1pt<=5",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
-#
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt5-10","muEta>1.25&&muEta<1.75&&muL1pt>5&&muL1pt<=10",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
-#
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt10-20","muEta>1.25&&muEta<1.75&&muL1pt>10&&muL1pt<=20",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
-#
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt20-50","muEta>1.25&&muEta<1.75&&muL1pt>20&&muL1pt<=50",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
-#
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt50-100","muEta>1.25&&muEta<1.75&&muL1pt>50&&muL1pt<=100",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
-#
-#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_l1pt100-140","muEta>1.25&&muEta<1.75&&muL1pt>100",
-#             selections,labels,normalizations,
-#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 
-plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_q7","muEta>1.25&&muEta<1.75&&muL1pt>0&&muL1q==7",
+plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_3LCTto4LCT",
+             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+             +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
+             +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
              selections,labels,normalizations,
              "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 
-plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_q6","muEta>1.25&&muEta<1.75&&muL1pt>0&&muL1q==6",
+plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_2LCTto3LCT",
+             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+             +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
+             +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
              selections,labels,normalizations,
              "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
+

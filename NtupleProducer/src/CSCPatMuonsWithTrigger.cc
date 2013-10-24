@@ -52,16 +52,22 @@ void CSCAnalysis::CSCPatMuonsWithTrigger::Set(const edm::Event& e, const edm::In
 
          // hitpattern information
          reco::HitPattern hp = mu1->outerTrack()->hitPattern();
-         std::vector<int> cscStation, cscRing;
+         //std::vector<int> cscStation, cscRing;
+         int firstStation = 0;
+         int lastStation = 0;
          for (int hit=0; hit<hp.numberOfValidHits(); hit++) {
             uint32_t p = hp.getHitPattern(hit);
             if (hp.muonCSCHitFilter(p)) {
-               cscStation.push_back(hp.getMuonStation(p));
-               cscRing.push_back(hp.getCSCRing(p));
+               //cscStation.push_back(hp.getMuonStation(p));
+               //cscRing.push_back(hp.getCSCRing(p));
+               if (firstStation==0) firstStation = hp.getMuonStation(p);
+               lastStation = hp.getMuonStation(p);
             }
          }
-         pmwt_.muCSCStation.push_back(cscStation);
-         pmwt_.muCSCRing.push_back(cscRing);
+         //pmwt_.muCSCStation.push_back(cscStation);
+         //pmwt_.muCSCRing.push_back(cscRing);
+         pmwt_.muFirstStation.push_back(firstStation);
+         pmwt_.muLastStation.push_back(lastStation);
       }
    }
 
