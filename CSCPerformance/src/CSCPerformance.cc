@@ -123,12 +123,12 @@ CSCPerformance::plotMatchedChambers(edm::Handle<reco::MuonCollection> muons)//, 
 {
    // ME+4/2 region
    // eta = [1.2,1.8], phi = [1.396,2.269]
-   double etaMin = 1.2;
-   double etaMax = 1.7;
-   double phiMin = 1.4;
-   double phiMax = 2.25;
-   double outPhiMin = 1.2;
-   double outPhiMax = 2.45;
+   double etaMin = 1.25;
+   double etaMax = 1.75;
+   double phiMin = 1.45;
+   double phiMax = 2.1;
+   double outPhiMin = 1.45;
+   double outPhiMax = 2.1;
 
    // Get list of detector ids for ME42
 //   std::vector<int> ME42DetId;

@@ -99,10 +99,14 @@ def plot_n_hists(ntuple, varName, binning, filename, selection, selections=[""],
             plots[i].SetTitle(title)
             plots[i].GetXaxis().SetTitle(xaxis)
             plots[i].GetYaxis().SetTitle("Events")
-            plots[i].Scale(normalization[i])
+            #plots[i].Scale(1)
+            size = plots[i].GetEntries()
+            #plots[i].Scale(normalization[i])
             plots[i].Draw('ph')
         else:
-            plots[i].Scale(normalization[i])
+            curSize = plots[i].GetEntries()
+            plots[1].Scale(size/curSize)
+            #plots[i].Scale(normalization[i])
             plots[i].Draw('phsame')
         legend.AddEntry(plots[i],labels[i], "p")
 
@@ -124,17 +128,44 @@ normalizations1 = [1,1]
 #             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 #
 
-plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_3LCTto4LCT",
+#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_3LCTto4LCT",
+#             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+#             +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
+#             +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
+#             selections,labels,normalizations,
+#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
+#
+#plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_2LCTto3LCT",
+#             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+#             +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
+#             +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
+#             selections,labels,normalizations,
+#             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
+
+plot_n_hists(tree,"muPt",[50,0,150],"pt_tracker_3LCTto4LCT",
              "muEta>1.25&&muEta<1.75&&muL1pt>0"
              +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
              +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
              selections,labels,normalizations,
-             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
+             "Tracker p_{T}","p_{T} (GeV/c)")
 
-plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_2LCTto3LCT",
+plot_n_hists(tree,"muPt",[50,0,150],"pt_tracker_2LCTto3LCT",
              "muEta>1.25&&muEta<1.75&&muL1pt>0"
              +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
              +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
              selections,labels,normalizations,
-             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
+             "Tracker p_{T}","p_{T} (GeV/c)")
 
+plot_n_hists(tree,"muL1pt",[50,0,150],"pt_CSCTF_3LCTto4LCT",
+             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+             +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
+             +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
+             selections,labels,normalizations,
+             "CSCTF p_{T}","p_{T} (GeV/c)")
+
+plot_n_hists(tree,"muL1pt",[50,0,150],"pt_CSCTF_2LCTto3LCT",
+             "muEta>1.25&&muEta<1.75&&muL1pt>0"
+             +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
+             +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
+             selections,labels,normalizations,
+             "CSCTF p_{T}","p_{T} (GeV/c)")

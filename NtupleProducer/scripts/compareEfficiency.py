@@ -72,8 +72,6 @@ def make_plot(tree, variable, selection, binning, xaxis='', title=''):
     ''' Plot a variable using draw and return the histogram '''
     global n
     draw_string = "%s>>htemp%i(%s)" % (variable, n, ", ".join(str(x) for x in binning))
-    #bin_string = str(len(binning)-1)+", ["+", ".join(str(x) for x in binning)+"]"
-    #draw_string = "%s>>htemp%i(%s)" % (variable, n, bin_string)
 
     print draw_string
     print selection
