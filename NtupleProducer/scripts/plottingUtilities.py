@@ -154,8 +154,7 @@ def plot_n_hists(ntuple, varName, binning, filename, selection, selections=[""],
             ntuple, varName,
             selection_temp,
             binning,
-            colors[i],styles[i],
-            '',''
+            colors[i],styles[i]
             )
         )
 
