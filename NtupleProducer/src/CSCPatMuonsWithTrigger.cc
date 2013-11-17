@@ -50,6 +50,10 @@ void CSCAnalysis::CSCPatMuonsWithTrigger::Set(const edm::Event& e, const edm::In
          pmwt_.muOuterEta.push_back(mu1->outerTrack()->outerEta());
          pmwt_.muOuterPhi.push_back(mu1->outerTrack()->outerPhi());
 
+         pmwt_.muStandAlonePt.push_back(mu1->outerTrack()->pt());
+         pmwt_.muStandAloneEta.push_back(mu1->outerTrack()->eta());
+         pmwt_.muStandAlonePhi.push_back(mu1->outerTrack()->phi());
+
          // hitpattern information
          reco::HitPattern hp = mu1->outerTrack()->hitPattern();
          //std::vector<int> cscStation, cscRing;

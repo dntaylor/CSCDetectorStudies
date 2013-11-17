@@ -40,6 +40,10 @@ namespace CSCAnalysis
        muOuterEta.clear();
        muOuterPhi.clear();
 
+       muStandAlonePt.clear();
+       muStandAloneEta.clear();
+       muStandAlonePhi.clear();
+
        //muCSCStation.clear();
        //muCSCRing.clear();
        muFirstStation.clear();
@@ -74,6 +78,11 @@ namespace CSCAnalysis
     std::vector<float> muOuterPt;
     std::vector<float> muOuterEta;
     std::vector<float> muOuterPhi;
+
+    // standalone muon properties
+    std::vector<float> muStandAlonePt;
+    std::vector<float> muStandAloneEta;
+    std::vector<float> muStandAlonePhi;
 
     // hit pattern
     //std::vector< std::vector<int> > muCSCStation;
