@@ -59,24 +59,34 @@ normalizations = [1./(40.*3.14159/180.),1./(280.*3.14159/180.)]
 #             selections,labels,normalizations,
 #             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 
-plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution",
-             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0",
-             selections,labels,normalizations,
-             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
+plot_n_hists(tree,"(muL1pt-muPt)/muPt",[44,-2,20],"ptResolution_withNo4thLCT",
+             "muEta>1.25&&muEta<1.75&&muL1pt>0",
+             ["muPhi>80.*3.14159/180.&&muPhi<120*3.14159/180.","(muPhi>140.*3.14159/180.||muPhi<60.*3.14159/180.)",
+             "muPhi>80.*3.14159/180.&&muPhi<120*3.14159/180.&&muLastStation!=4",
+             "muPhi>80.*3.14159/180.&&muPhi<120*3.14159/180.&&muLastStation==4"],
+             ["ME4/2 Region","Non-ME4/2 Region","ME4/2 Region (No 4th)","ME4/2 Region (With 4th only)"],
+             [1./(40.*3.14159/180.),1./(280.*3.14159/180.),1./(40.*3.14159/180.),1./(40.*3.14159/180.)],
+             "CSCTF p_{T} Resolution","(L1p_{T}-p_{T})/p_{T}")
 
-plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution_2LCTto3LCT",
-             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0"
-             +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
-             +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
-             selections,labels,normalizations,
-             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
+#plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution",
+#             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0",
+#             selections,labels,normalizations,
+#             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
+#
+#plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution_2LCTto3LCT",
+#             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0"
+#             +"&&((muNumberOfMatchedStations==2&&muLastStation!=4)"
+#             +"||(muNumberOfMatchedStations==3&&muLastStation==4))",
+#             selections,labels,normalizations,
+#             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
+#
+#plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution_3LCTto4LCT",
+#             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0"
+#             +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
+#             +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
+#             selections,labels,normalizations,
+#             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
 
-plot_n_hists(tree,"(muStandAlonePt-muPt)/muPt",[44,-2,20],"standalonePtResolution_3LCTto4LCT",
-             "muEta>1.25&&muEta<1.75&&muStandAlonePt>0"
-             +"&&((muNumberOfMatchedStations==3&&muLastStation!=4)"
-             +"||(muNumberOfMatchedStations==4&&muLastStation==4))",
-             selections,labels,normalizations,
-             "Standalone p_{T} Resolution","(Standalone p_{T}-p_{T})/p_{T}")
 
 #plot_hists_with_ratio(tree,"muL1pt",[75,0,150],"ptWithRatio",
 #                      "muEta>1.25&&muEta<1.75&&muL1pt>0",

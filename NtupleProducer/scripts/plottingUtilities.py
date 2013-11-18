@@ -144,8 +144,8 @@ def plot_n_hists(ntuple, varName, binning, filename, selection, selections=[""],
     ''' Save a rate Plot '''
     
     plots = []
-    colors = [ROOT.EColor.kRed,ROOT.EColor.kBlue,ROOT.EColor.kGreen]
-    styles = [22,21,20]
+    colors = [ROOT.EColor.kRed,ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kBlack,ROOT.EColor.kOrange,ROOT.EColor.kTeal,ROOT.EColor.kViolet]
+    styles = [22,21,20,23,29,33,3]
     for i in range(len(selections)):
         selection_temp = selection
         if selections[i]!="":
@@ -173,7 +173,7 @@ def plot_n_hists(ntuple, varName, binning, filename, selection, selections=[""],
             plots[i].Draw('ph')
         else:
             curSize = plots[i].GetEntries()
-            plots[1].Scale(size/curSize)
+            plots[i].Scale(size/curSize)
             #plots[i].Scale(normalization[i])
             plots[i].Draw('phsame')
         legend.AddEntry(plots[i],labels[i], "p")
